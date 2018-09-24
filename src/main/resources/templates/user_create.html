@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout" 
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+<title>DeepStudio</title>
+</head>
+<body>
+	<div class="container" layout:fragment="content">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title">Create User</h3>
+			</div>
+			<div class="panel-body">
+				<form class="form-horizontal"  role="form" th:action="@{/user/create}" method="post" th:object="${form}">
+					<ul th:if="${#fields.hasErrors('*')}" class="bg-danger">
+							<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input
+								is incorrect</li>
+					</ul>
+					<input type="hidden" name="${_csrf.parameterName}"
+						value="${_csrf.token}" />
+					<input type="hidden" th:field="*{id}"/>
+					<div class="form-group">
+						<label for="email" class="col-sm-2 control-label">Email address</label> 
+						<div class="col-sm-5">
+							<input type="email" name="email" class="form-control" id="email" th:field="*{email}" required="required" autofocus="autofocus" />
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="password" class="col-sm-2 control-label">Password</label>
+						<div class="col-sm-5"> 
+							<input type="password" name="password" class="form-control" id="password" th:field="*{password}" required="required" />
+						</div>	
+					</div>
+					<div class="form-group">
+						<label for="passwordRepeated" class="col-sm-2 control-label">Repeat</label>
+						<div class="col-sm-5"> 
+							<input type="password" name="passwordRepeated" class="form-control" id="passwordRepeated" th:field="*{passwordRepeated}" required="required" />
+						</div>	
+					</div>
+					<div class="form-group">
+						<label for="role" class="col-sm-2 control-label">Role</label> 
+						<div class="col-sm-5">
+							<select name="role" th:field="*{role}" id="role" class="form-control" required="required">
+									<option value="USER">USER</option>
+									<option sec:authorize="hasRole('ADMIN')" value="ADMIN">ADMIN</option>
+									<option value="SUPER_ADMIN">SUPER ADMIN</option>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-offset-2 col-sm-2">
+							<button type="submit" class="form-control btn btn-primary">Save</button>
+						</div>
+					</div>		
+			</form>
+		</div>
+	</div>
+</div>
+</body>
+</html>

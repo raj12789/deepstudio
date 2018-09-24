@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <!--[if IE]>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <![endif]-->
+    <title>Deep Framing Center &amp; Studio</title>
+    <!-- BOOTSTRAP CORE STYLE CSS -->
+    <link href="http://cdn.jsdelivr.net/webjars/bootstrap/3.2.0-2/css/bootstrap.min.css"
+			th:href="@{/webjars/bootstrap/3.2.0-2/css/bootstrap.min.css}"
+			rel="stylesheet" media="screen"></link>
+	<script src="http://cdn.jsdelivr.net/webjars/jquery/2.1.1/jquery.min.js"
+	th:src="@{/webjars/jquery/2.1.1/jquery.min.js}"></script>
+	<script
+	src="http://cdn.jsdelivr.net/webjars/bootstrap/3.2.0-2/js/bootstrap.min.js"
+	th:src="@{/webjars/bootstrap/3.2.0-2/js/bootstrap.min.js}"></script>
+	
+	<script type="text/javascript">
+		$(document).ready(
+				function() {
+					$('#mailStatus').html('');
+					$('.send_mail').click(function() {
+						$('#sendMail').prop('disabled', false);
+						$('#mailStatus').html('');
+						$('#toEmailId').val('');
+						$('#mailBody').val('');
+					});
+					$("#sendMail").click(function(){
+						var to =$('#toEmailId').val();
+						if(to != ''){
+							$(this).prop('disabled', true);
+							$.ajax({
+						        type: "GET",
+						        url: "/deepStudio/quatation/sendMail",
+						        dataType: "json",
+						        data: {custBillingId : $('#pvqBillId').val(),to : $('#toEmailId').val(),
+							        	mailBody : $('#mailBody').val()},
+						        success : function(data) {
+						        	$('#mailStatus').html(''+data.Msg);
+						        },
+					            error: function(jqXHR, textStatus, errorThrown) {
+					                alert("error:" + textStatus + " exception:" + errorThrown);
+					                }
+							  });
+							}else{
+								$('#sendMail').prop('disabled', false);
+								alert('Receipant Address can not be blank');
+							}
+						});
+					
+				});
+	</script>
+	<style type="text/css">
+			@import url(http://fonts.googleapis.com/css?family=Slabo+27px);
+			body {
+			    font-family: 'Slabo 27px', serif;
+			    font-size:16px;
+			    background-color: #EAEAEA;
+			}
+			.pad-top {
+			    padding-top:15px;
+			}
+			.pad-bottom {
+			     padding-bottom:20px;
+			}
+			.font-big {
+			    font-size:20px;
+			}
+			.outer-section {
+			     border:1px solid #dedede;
+			     background-color: #fff;
+			}
+	</style>
+	<!-- CUSTOM STYLE CSS -->
+</head>
+<body>
+	<div class="container">
+	<div class="panel panel-default">
+			<div class="panel-heading text-muted">
+				<h1 class="panel-title">QUATATION SHEET</h1>
+			</div>
+            <div class="panel-body">  
+            	<form action="#" id="frmPvqMailQuatation" th:object="${objPvq}"  class="form-horizontal">
+            	<input type="hidden" th:field="*{pvqBillDetailId}" th:id="pvqBillId"/>
+	        	<div id="print-area">
+		             <div class="row pad-top font-big">
+		                <div class="col-lg-3 col-md-3 col-sm-3">
+		                <img th:src="@{/images/140x140.gif}" alt="..." class="img-rounded"></img>
+		                </div>
+		                <div class="col-lg-4 col-md-4 col-sm-4">
+		                	<br/>
+		                	<br/>
+		                    <strong>Support : </strong>deepstudio98@gmail.com<br />
+		                    <strong>Call :</strong>Pinkesh Patel : +9825607649<br />
+		                    <strong>Call :</strong>Piyush Patel :+9825576310<br />
+		                </div>
+		                <div class="col-lg-5 col-md-5 col-sm-5">
+		                    <h3><ins><strong>Deep Framing Center &amp; Studio</strong></ins></h3>
+		                    <p>Shop No. 25-26, Tower - 2, Swaminarayan Resi Cum Plaza
+								Mahesh Complex Rd, Waghodia Road
+								Near Poonam Complex, Satyam Park Society
+								<br/>Vadodara, Gujarat 390019
+								India</p>
+		                </div>
+		            </div>
+		            <hr />
+		            <div class="row ">
+		            	<div class="col-lg-6 col-md-6 col-sm-6 text-left">
+							<h2>Client Details :</h2>
+							<h4><strong>Name :</strong><span th:text="*{custName}" >Desc</span></h4>
+							<h4><strong>Call :</strong><span th:text="*{custMobno}" >Desc</span></h4>
+							<h4><strong>Address  :</strong><span th:text="*{custAddress}" >Desc</span></h4>
+						</div>
+		                <div class="col-lg-6 col-md-6 col-sm-6">
+		                    <h2>Order Details :</h2>
+		                    <h4><strong>Invoice No: </strong>#<span th:text="*{billNumber}" >Desc</span></h4>
+		                    <h4><strong>Invoice Date: </strong> <span th:text="*{billDate}" >Desc</span></h4>
+		                </div>
+		            </div>
+		            <hr />
+		            <br />
+		            <div class="row">
+		                <div class="col-lg-12 col-md-12 col-sm-12">
+		                    <div class="table-responsive">
+		                        <table class="table table-striped table-bordered table-hover">
+		                            <thead>
+												<tr>
+													<th  th:text="#{fc.bd.srno.label}">Sr No.</th>
+													<th  th:text="#{fc.bd.orderDate.label}">Order Date</th>
+													<th  th:text="#{fc.bd.eventName.label}">Event Name</th>
+													<th  th:text="#{fc.bd.eventTime.label}">Time</th>
+													<th  th:text="#{fc.bd.phg.label}"></th>
+													<th  th:text="#{fc.bd.vdg.label}"></th>
+													<th  th:text="#{fc.bd.crn.label}"></th>
+													<th  th:text="#{fc.bd.led.label}"></th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr th:each="row,rowStat : *{pvqBillOrderSummary}">
+													<td th:text="${rowStat.count}" th:id="'rowCount_'+${rowStat.count}"></td>
+													<td>
+														<span th:text="*{#dates.format(pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryDate,'dd/MM/yyyy')}" ></span>
+										 			</td>
+													<td>
+														<span th:text="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryEventType}" ></span>
+													</td>
+													<td>
+														<span th:text="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryTime}" ></span>
+													</td>
+													<td>
+														<span th:text="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryPhotographersQt}" ></span>
+													</td>
+													<td>
+														<span th:text="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryVideographersQt}" ></span>
+													</td>
+													<td>
+														<span th:text="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryCrainQt}" ></span>
+													</td>
+													<td>
+														<span th:text="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryLedQt}" ></span>
+													</td>
+												</tr>
+											</tbody>
+		                        </table>
+		                    </div>
+		                </div>
+		            </div>
+		            <div class="row">
+		                <div class="col-lg-12 col-md-12 col-sm-12">
+		                    <div class="table-responsive">
+		                        <table class="table table-striped table-bordered table-hover">
+		                            <thead>
+												<tr>
+													<th scope="col" th:text="#{fc.bd.orderDetailedSummary.label}">Order Detailed Summary</th>
+													<th scope="col" th:text="#{fc.bd.orderPackage.label}">Order Package</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr th:each="row,rowStat : *{pvqBillConcernDetails}">
+													<td>
+														<ins>
+															<span th:text="|*{pvqBillConcernDetails[__${rowStat.index}__].pvqConcernType.pvqConcernTypeName} |" >Concern Type Name</span>
+														</ins>
+														<ul th:each="t : ${#strings.arraySplit(row.pvqBillConcernDetailDesc, ',')}">
+															<li><span th:text="|${t}|" >Desc</span></li>
+														</ul>
+													</td>
+													<td>
+														<span th:text="|*{pvqBillConcernDetails[__${rowStat.index}__].sellingRate} INR|" >Package</span>
+													</td>
+												</tr>
+											</tbody>
+		                        </table>
+		                    </div>
+		                </div>
+		            </div>
+	         	<hr />
+	            <div class="row">
+	                <div class="col-lg-8 col-md-8 col-sm-8" style="text-align: right; padding-right: 15px;">
+	                    Total Package : 
+	                </div>
+	                <div class="col-lg-4 col-md-4 col-sm-4">
+	                    <strong><span th:text="|*{quatationBillAmount} INR |" ></span></strong>
+	                </div>
+	            </div>
+	            <hr />
+	            <div class="row">
+	                <div class="col-lg-12 col-md-12 col-sm-12">
+	                    <strong>IMPORTANT INSTRUCTIONS :
+	                    </strong>
+	                    <h5># This is an electronic receipt so doesn't require any signature.</h5>
+	                    <h5># You can contact us between 10:am to 8:00 pm on all working days except sunday.</h5>
+	                </div>
+	            </div>
+	            <br/>
+	            <div>
+	            	<button type="button" th:id="sendMailDetail" class="btn btn-success send_mail" data-toggle="modal" data-target="#exampleModal" style="width:90px">&nbsp;Send Mail</button>
+	            	<button type="button" th:id="close" class="btn btn-success" onclick="window.close();" style="width:90px">&nbsp;Close</button>
+	            </div>
+            </div>
+           </form>
+          </div>
+        </div>
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="width:100%" data-backdrop="false">
+				  <div class="modal-dialog">
+				    <div class="modal-content">
+				      <div class="modal-header">
+				        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				        <h4 class="modal-title" id="exampleModalLabel">Send Mail</h4>
+				      </div>
+				      <div class="modal-body">
+				      		<form action="#" id="frmPvqSendMail" class="form-horizontal">
+				      			<div class="text-muted" style="margin-left:100px;">
+									<ins><h3><label for="mailStatus" id="mailStatus" class="control-label" th:text="*{mailStatus}">Mail Status</label></h3></ins>
+								</div>
+								<div class="form-group">
+				                     <label class="col-sm-2 control-label">&nbsp;</label>
+				                     <div class="col-sm-8">
+				                     	<span  style="color:red">Use comma(,) to separate multiple emails.</span>
+				                     </div>
+				                 </div>
+				                <div class="form-group">
+				                    <label class="col-sm-2 control-label">From:</label>
+				                    <div class="col-sm-4">
+				                    <input type="text" name="fromEmailId" id="fromEmailId" class="form-control" 
+				                    	th:placeholder="#{pvq.quataion.sendMail.fromId}"
+				                    	style="width:250px" readonly="readonly"/>
+				                    </div>
+				                 </div>
+				                 <div class="form-group">
+				                    <label class="col-sm-2 control-label">To:</label>
+				                    <div class="col-sm-4">
+				                    <input type="text" name="toEmailId" id="toEmailId" class="form-control" style="width:250px"/>
+				                    </div>
+				                 </div>
+				                 <div class="form-group">
+				                      <label class="col-sm-2 control-label">Description:</label>
+				                     <div class="col-sm-4">
+				                         <textarea name="mailBody" id="mailBody" rows="5" class="form-control" style="width:250px" ></textarea>
+				                    </div>    
+				                 </div>
+				                 <br/>
+				              </form>
+				      </div>
+				      <div class="modal-footer">
+				      	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				      	<a href="#" class="btn btn-primary " onClick="window.print();return false">Print Invoice</a>
+				        <button type="button" class="btn btn-primary" id="sendMail">Send Mail</button>
+				      </div>
+				     </div>
+				   </div>
+		</div>
+       </div>
+  </body>
+
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout" 
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+<title th:text="#{ds.fc.title}">Deep Studio</title>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#pvqConcernRateDataTable').DataTable();
+	});	
+</script>
+</head>
+<body>
+	<div layout:fragment="content" class="container">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"
+					th:text="#{fc.pvqConcernRate.table.caption}">Panel title</h3>
+			</div>
+			<div class="panel-body">
+				<table class="table table-hover table-striped table-condensed" id="pvqConcernRateDataTable">
+					<thead>
+						<tr>
+							<th scope="col" th:text="#{fc.pvqConcernRate.pvqConcernRateId.label}">Id</th>
+							<th scope="col"
+								th:text="#{fc.pvqConcernRate.pvqConcernRateType.label}">PVQ
+								Concern Type</th>
+							<th scope="col"
+								th:text="#{fc.pvqConcernRate.pvqConcernRateName.label}">PVQ
+								Concern Name</th>	
+							<th scope="col"
+								th:text="#{fc.pvqConcernRate.pvqConcernRateDesc.label}">PVQ
+								ConcernRate Description</th>
+							<th scope="col"
+								th:text="#{fc.pvqConcernRate.pvqConcernRateAmt.label}">PVQ
+								ConcernRate Exposure</th>	
+							<th scope="col"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="fi : ${pvqList}">
+							<td th:text="${fi.pvqConcernRateId}">1</td>
+							<td th:text="${fi.pvqConcernType.pvqConcernTypeName}">George</td>
+							<td th:text="${fi.pvqConcernName}">Washington</td>
+							<td th:text="${fi.pvqConcernRateDesc}">Washington</td>
+							<td th:text="${fi.pvqConcernRateAmt}">Washington</td>
+							<td>
+							<div sec:authorize="hasRole('ADMIN')">
+							<a
+								th:href="@{/pvqManager/pvqConcernRate/edit(pvqId=${fi.pvqConcernRateId})}"><span
+									class="glyphicon glyphicon-pencil"></span></a> 
+							<a
+								onclick="return removeRecord();"
+								th:href="@{/pvqManager/pvqConcernRate/delete(pvqId=${fi.pvqConcernRateId})}"><span
+									class="glyphicon glyphicon-remove-circle"></span></a>
+							</div></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="panel panel-default" sec:authorize="hasRole('ADMIN')">
+			<div class="panel-heading">
+				<h3 class="panel-title">Concern Rate</h3>
+			</div>
+			<div class="panel-body">
+				<form action="#" th:action="@{/pvqManager/pvqConcernRate/create}"
+					th:object="${objPvq}" method="post" class="form-inline">
+					<ul th:if="${#fields.hasErrors('*')}" class="bg-danger">
+						<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input
+							is incorrect</li>
+					</ul>
+
+					<div class="form-group">
+						<label class="sr-only" for="cType">Type</label> 
+						<input type="hidden" th:field="*{pvqConcernRateId}" /> 
+						<select th:field="*{pvqConcernType.pvqConcernTypeId}" class="form-control">
+						  		<option th:each="type : ${pvqConcernTypes}" 
+						          th:value="${type.pvqConcernTypeId}"
+						          th:text="${type.pvqConcernTypeName}">Select One</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="cName">Name</label>
+						<input class="form-control" type="text" id="cType" th:field="*{pvqConcernName}"
+							th:errorclass="fieldError" th:placeholder="#{fc.pvqConcernRate.pvqConcernRateName.label}" />
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="cdescription">Description</label>
+						<input class="form-control" type="text" id="cdescription"
+										th:field="*{pvqConcernRateDesc}" th:placeholder="#{fc.pvqConcernRate.pvqConcernRateDesc.label}" />
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="cRate">Exposure Rate</label>
+						<input class="form-control" type="text" id="cRate"
+										th:field="*{pvqConcernRateAmt}" th:placeholder="#{fc.pvqConcernRate.pvqConcernRateAmt.label}" />
+					</div>
+					<button type="submit" class="btn btn-primary"
+											th:text="#{${pvqType + '.pvqInfo.button.label'}}">Action</button>					
+				</form>
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>

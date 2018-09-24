@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	xmlns:spring="http://www.springframework.org/tags"
+	layout:decorator="framingCenter/layout/framingCenterLayout" 
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+<title th:text="#{ds.fc.title}">Deep Studio</title>
+<script>
+	$(document).ready(
+			function() {
+				$('#frameRateChart').on('change', function(evt) {
+					var files = evt.target.files; // FileList object
+
+					// Loop through the FileList and render image files as thumbnails.
+					for (var i = 0, f; f = files[i]; i++) {
+
+						// Only process image files.
+						if (!f.type.match('image.*')) {
+							continue;
+						}
+
+						var reader = new FileReader();
+
+						// Closure to capture the file information.
+						reader.onload = (function(theFile) {
+							return function(e) {
+								$('#thumbImg').attr('src', e.target.result);
+							};
+						})(f);
+
+						// Read in the image file as a data URL.
+						reader.readAsDataURL(f);
+					}
+				});
+				
+				$('#ChooseframeId').click(function() {
+					$('#frame_Search_Result').html(''); //Clear Frame found or not caption Message
+				});
+
+				$("#find_frame").click(function() {
+					var frameTypeId =$('#frame_type').find('option:selected').val();
+					var frameNumberId =$('#frame_Number').find('option:selected').val();
+					var framethicknessId =$('#frame_thickness').find('option:selected').val();
+					var frameSizeId =$('#frame_size').find('option:selected').val();
+
+					$('#selected_Frame').val(''); // Clear Selected Frame Caption
+						$.ajax({
+							type: "GET",
+				            url : '/deepStudio/framingCenter/frameRate/searchFrame',
+				            datatype: "json",
+				            data: { frameTypeId: frameTypeId, frameNumberId: frameNumberId,
+				            	frameThicknessId: framethicknessId, frameSizeId: frameSizeId},
+				            success : function(data) {
+					            data = JSON.parse(data);
+				               	$('#frame_details_id').val(parseInt(data.Result)); //Set Found Frame Detail ID
+					            if(data.Result != ''){
+					            	var frameTypeText =$('#frame_type').find('option:selected').text();
+					            	var frameNumberText =$('#frame_Number').find('option:selected').text();
+					            	var frameThicknessText =$('#frame_thickness').find('option:selected').text();
+					            	var frameSizeText =$('#frame_size').find('option:selected').text();
+					            	$('#selected_Frame').val(frameTypeText+',\n'+frameNumberText+',\n'+frameThicknessText+',\n'+frameSizeText); //Set Selected Frame Description
+					            	$('#frame_Search_Result').html(data.Msg); //Set Frame found or not caption Message
+					            	$('#frame_result_p').attr('class','bg-success'); //Caption color change to Green (Frame Found)
+					            	$('#ChooseframeId').html('Change Frame'); //Button Value change to Change Frame
+							    }else{
+							    	$('#frame_Search_Result').html(data.Msg+'<a href="#" th:href="@{/frameDetails}">Please Add frame from Here.</a>');
+							    	$('#frame_result_p').attr('class','bg-warning');//Caption color change to Red (Frame Not Found)
+							    	$('#ChooseframeId').html('Choose Frame'); //Button Value Change to Choose Frame
+								}
+					          },
+				            error: function(jqXHR, textStatus, errorThrown) {
+				                alert("error:" + textStatus + " exception:" + errorThrown);
+				                }
+				        });
+				});
+				
+				$(document).ready(function() {
+					$('#frameRateDataTable').DataTable();
+				});	
+			});
+</script>
+
+</head>
+<body>
+	<div layout:fragment="content" class="container">
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title" th:text="#{fc.frameRate.table.caption}">Frame Rate Records</h3>
+		</div>
+		<div class="panel-body">
+			<table class="table table-hover table-striped table-condensed" id="frameRateDataTable">
+				<thead class="framedata_table_header">
+					<tr>
+						<th scope="col" th:text="#{fc.frameRate.rateId.label}">Id</th>
+						<th scope="col" th:text="#{fc.frameRate.frameType.label}">Frame
+							Detail</th>
+						<th scope="col" th:text="#{fc.frameRate.clientType.label}">Client
+							Type</th>
+						<th scope="col" th:text="#{fc.frameRate.price.label}">Price</th>
+						<th scope="col" th:text="#{fc.frameRate.frameRatePhoto.label}">Frame
+								Rate Photo</th>
+						<th scope="col"></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr th:each="fi : ${frameRates}">
+						<td th:text="${fi.frameRateId}">1</td>
+						<td
+							th:text="|${fi.frameDetails.frameInfo.frameType},${fi.frameDetails.frameNumber.frameNumber},${fi.frameDetails.frameThickness.frameThicknessSize} ${fi.frameDetails.frameThickness.frameMeasurementsType},
+								          ${fi.frameDetails.frameSize.frameSizeWidth}*${fi.frameDetails.frameSize.frameSizeHeight} ${fi.frameDetails.frameSize.frameMeasurementsType}|">1</td>
+						<td th:text="${fi.frameClientType.clientTypeName}">1</td>
+						<td th:text="${fi.price}">gwash</td>
+						<td th:text="${fi.frameRatePhoto}">gwash</td>
+						<td>
+						<div sec:authorize="hasRole('ADMIN')">
+						<a
+							th:href="@{/framingCenter/frameRate/edit(frameRateId=${fi.frameRateId})}"><span
+								class="glyphicon glyphicon-pencil"></span></a> <a
+							onclick="return removeRecord();"
+							th:href="@{/framingCenter/frameRate/delete(frameRateId=${fi.frameRateId})}"><span
+								class="glyphicon glyphicon-remove-circle"></span></a>
+						</div>			
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		</div>
+		<div class="panel panel-default" sec:authorize="hasRole('ADMIN')">
+			<div class="panel-heading">
+				<h3 class="panel-title">Frame Rate</h3>
+			</div>
+			<div class="panel-body">
+					<form action="#" th:action="@{/framingCenter/frameRate/create}"
+						th:object="${frameRate}" method="post" enctype="multipart/form-data" class="form-inline">
+						<ul th:if="${#fields.hasErrors('*')}" class="bg-danger">
+							<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input
+								is incorrect</li>
+						</ul>
+							<div class="form-group">
+								<input type="hidden" th:field="*{frameRateId}" /> 
+								<input type="hidden" id="frame_details_id" th:field="*{frameDetails.frameQualifiedId}" ></input>
+								<label class="sr-only" for="fDetails">Frame Details</label>
+								 <button type="button" class="btn btn-success" th:id="'ChooseframeId'" data-toggle="modal" data-target="#exampleModal" data-whatever="@getbootstrap">&nbsp;Choose Frame</button>
+							</div>
+							<div class="form-group">
+								<label class="sr-only" for="fClientType">Frame Client Type</label>	
+									<select th:field="*{frameClientType.clientTypeId}"
+										class="form-control">
+											<option th:each="type : ${clientTypes}"
+												th:value="${type.clientTypeId}"
+												th:text="${type.clientTypeName}">Select One</option>
+									</select>
+							</div>
+							<div class="form-group">
+								<textarea rows="3" class="form-control" th:id="'selected_Frame'" 
+								th:placeholder="#{fc.frameRate.desc.label}"
+								th:field="*{frameDetails.frameDescription}" readonly="readonly" style="resize: none;"></textarea>
+							</div>
+							<div class="form-group">
+								<label class="sr-only" for="price">Frame price</label>				
+										<input class="form-control" type="text" id="price"
+											th:field="*{price}" th:errorclass="fieldError" th:placeholder="#{fc.frameRate.price.label}" />
+							</div>
+							<div class="form-group">
+								<label class="sr-only" for="frameRateChart">Frame Rate Chart</label> <input
+									type="file" id="frameRateChart" name="file" class="form-control" />
+							</div>
+							<div class="form-group">
+								<img src="" id="thumbImg" class="form-control" width="50" alt=""
+									height="50" />
+							</div>		
+							<button type="submit" class="btn btn-primary" th:text="#{${frameRateType + '.frameInfo.button.label'}}">Action</button>
+					</form>
+				</div>
+			</div>
+			<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" data-backdrop="false">
+				  <div class="modal-dialog">
+				    <div class="modal-content">
+				      <div class="modal-header">
+				        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				        <h4 class="modal-title" id="exampleModalLabel">Search for Frames</h4>
+				      </div>
+				      <div class="modal-body">
+				        <form action="#" th:action="@{/frameRate/searchFrame}"
+						th:object="${objFrameDetails}" method="post"  enctype="multipart/form-data" class="form-horizontal">
+						<p class="" id="frame_result_p"><span id="frame_Search_Result">&nbsp;</span></p>
+				          <div class="form-group">
+				            <label for="frame-type" class="col-sm-5 control-label">Frame Type:</label>
+				            <div class="col-sm-4">
+				            <select th:field="*{frameInfo.frameInfoId}" th:id="'frame_type'" class="form-control">
+						  		<option th:each="type : ${frameTypes}" 
+						          th:value="${type.frameInfoId}"
+						          th:text="${type.frameType}">Select One</option>
+							</select>
+							</div>
+				          </div>
+				          <div class="form-group">
+				            <label for="frame-number" class="col-sm-5 control-label">Frame Number:</label>
+				            <div class="col-sm-4">
+				            <select th:field="*{frameNumber.frameNumberId}" th:id="'frame_Number'" class="form-control">
+									<option th:each="type : ${frameNumbers}" 
+							          	th:value="${type.frameNumberId}"
+							          	th:text="${type.frameNumber}">Select One</option>
+							</select>
+							</div>
+				          </div>
+				          <div class="form-group">
+				            <label for="frame-thickness" class="col-sm-5 control-label">Frame Thickness:</label>
+				            <div class="col-sm-4">
+				            <select th:field="*{frameThickness.frameThicknessId}" th:id="'frame_thickness'" class="form-control">
+								<option th:each="type : ${frameThickness}"
+										th:value="${type.frameThicknessId}"
+										th:text="|${type.frameThicknessSize} ${type.frameMeasurementsType}|">Select One</option>
+							</select>
+							</div>
+				          </div>
+				          <div class="form-group">
+				            <label for="frame-size" class="col-sm-5 control-label">Frame Size:</label>
+				            <div class="col-sm-4">
+				            <select th:field="*{frameSize.frameSizeId}" th:id="'frame_size'" class="form-control">
+						  	<option th:each="type : ${frameSizes}" 
+						        th:value="${type.frameSizeId}"
+						        th:text="|${type.frameSizeWidth} * ${type.frameSizeHeight} ${type.frameMeasurementsType}|">Select One</option>
+							</select>
+							</div>
+				          </div>
+				          <div>
+				          	<p class=""></p>
+				          </div>
+				         </form>
+				      </div>
+				      <div class="modal-footer">
+					        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					        <button type="button" class="btn btn-primary" th:id="'find_frame'">Find Frame</button>
+					      </div>
+				    </div>
+				  </div>
+				</div>
+			</div>
+</body>
+</html>

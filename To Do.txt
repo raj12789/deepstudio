@@ -1,0 +1,64 @@
+#Security for website
+#Testing By Sandy
+#charting for expense
+#Conversion Service Code
+--------------------Billing Validation------------------------
+D:Deep Website change template
+D:Load Data excel sheet
+D:Apply jquery datatable
+D:Google Embed URL
+D:Unique Contraint Violet solution in all validators
+D:Change Text of Frame Detail Dropdown in Frame Rate and in customerBillInfo
+D:Billing Server validator
+D:Add Error Page which redirect to Home Page
+D:Bill Date Issue
+D:When Page load due to any reason like remove concerns trigger following fd,dt,qt and totalamount
+D:Quanty changes triggger Selling Amount and hence Total Amount
+D:Actual Price calculated based on Frame detail and client type selection
+D:Quatity*Selling price is Total Amount :
+Logic
+onload default trigger fd,ct,qt --> actual price
+D:if Frame Detail,Client Type changes then calculate actual price using quantity always (default quantity 1)
+D:if quantity changes calculate simple actual rate
+D:if actual rate triggers then always trigger total amount and clear selling price or set selling price to 0
+D:Total Bill Amount should be added/removed as per Added/Removed Rows
+D:Alert When Removing all modules record
+D:Alert when final bill added
+D:Total Bill,Actual Price Read Only
+D:Billing Date Validation
+D:Set Today Date
+D:Quantity Actual price Selling Price Numeric,Mobile Number and floating up to 2
+D:Frame Size ,Frame Number ,Frame Thickness must be numeric
+FrameRatechart Added
+Customer Info tables deleted
+FrameCustomerBilling Modified
+FrameDesc Nullable True
+-------------------Framing Center Modules----------------------
+FrameType
+FrameNumber
+FrameSize
+FrameThickness
+FrameDetail
+FrameRate = FrameDetail+ClientType
+FrameCutomerBillingDetail
+
+--------------CustomerBilling Table-Class structure------------
+BillID (uID)
+custName
+custMobno
+custAddress
+BillNumber (Bill Unique Number)
+FinalBillAmount (Total Bill Amount added based on List<FrameDetail_FrameRate_Combination>)
+BillDate (Bill Date)
+billStatus
+CreatedDate (Today's Date)
+Updated Date (Bill Modified Date)
+ip Address (Remote Address of Machine)
+List<FrameDetail_FrameRate_Combination>
+			-BillID
+			-FrameDetail (Type,Number,Thickness,size)
+			-FrameClientType (client type)
+			-Quantity (Frame Quantity)
+			-Actual Rate (Qualified Rate)
+			-Sell Rate (Selling Rate)
+			

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+<title th:text="#{ds.fc.title}">Deep Studio</title>
+<script type="text/javascript">
+	$(document).ready(function() {
+		var table = $('#pvqCustomerBillingDataTable').DataTable();
+		
+	});
+</script>
+</head>
+<body>
+	<div layout:fragment="content" class="container">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"
+					th:text="#{fc.pvqCustomerBillInfo.table.caption}">Frame
+					Billing Records</h3>
+			</div>
+			<div class="panel-body">
+				<table class="table table-hover table-striped table-condensed"
+					id="pvqCustomerBillingDataTable">
+					<thead>
+						<tr>
+							<th scope="col"
+								th:text="#{fc.pvqCustomerBillInfo.custBillingId.label}">custBillingId</th>
+							<th scope="col"
+								th:text="#{fc.pvqCustomerBillInfo.custBillNumber.label}">custBillNumber</th>
+							<th scope="col"
+								th:text="#{fc.pvqCustomerBillInfo.custBillingDate.label}">custBillingDate</th>
+							<th scope="col"
+								th:text="#{fc.pvqCustomerBillInfo.pvqCustInfo.label}">CustInfo</th>
+							<th scope="col"
+								th:text="#{fc.pvqCustomerBillInfo.pvqDesc.label}">Bill
+								Description</th>
+							<th scope="col"
+								th:text="#{fc.pvqCustomerBillInfo.pvqBillAmount.label}">Quatation Bill
+								Amount</th>
+							<th scope="col"
+								th:text="#{fc.pvqCustomerBillInfo.pvqPaidBillAmount.label}">Paid Bill
+								Amount</th>
+							<th scope="col"
+								th:text="#{fc.pvqCustomerBillInfo.pvqDueBillAmount.label}">Due Bill
+								Amount</th>
+							<th scope="col"
+								th:text="#{fc.pvqCustomerBillInfo.pvqDiscountedBillAmount.label}">Discounted Bill
+								Amount</th>
+							<th scope="col"
+								th:text="#{fc.frameCustomerBillInfo.frameBillStatus.label}">Bill
+								Status</th>
+							<th scope="col"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="pvq : ${pvqList}">
+							<td th:text="${pvq.pvqBillDetailId}">1</td>
+							<td th:text="${pvq.billNumber}">George</td>
+							<td th:text="${#dates.format(pvq.billDate,'dd/MM/yyyy')}">Washington</td>
+							<td th:text="|${pvq.custName}  ${pvq.custMobno}|">Washington</td>
+							<td>
+								<table class="table table-hover table-striped table-condensed">
+									<tbody>
+										<tr th:each="fu,rowStat : ${pvq.pvqBillConcernDetails}">
+											<td th:text="${rowStat.count}">3</td>
+											<td th:text="${fu.pvqConcernType.pvqConcernTypeName}">Concern
+												Type Name</td>
+											<td th:text="${fu.pvqConcernRate.pvqConcernName}">Concern
+											Type Name</td>
+											<td th:text="${fu.quantity}">Quantity</td>
+											<td th:text="${fu.sellingRate}">Selling Price</td>
+										</tr>
+									</tbody>
+								</table>
+							</td>
+							<td th:text="${pvq.quatationBillAmount}">Washington</td>
+							<td th:text="${pvq.totalPaidAmount}">Washington</td>
+							<td th:text="${pvq.dueAmount}">Washington</td>
+							<td th:text="${pvq.dueAmount}">Washington</td>
+							<td th:text="${pvq.billStatus}">Washington</td>
+							<td>
+								<div sec:authorize="hasRole('ADMIN')">
+									<a
+										th:href="@{/pvqManager/pvqBillDesk/edit(custBillingId=${pvq.pvqBillDetailId})}"><span
+										class="glyphicon glyphicon-pencil"></span></a> <a
+										onclick="return removeRecord();"
+										th:href="@{/pvqManager/pvqBillDesk/delete(custBillingId=${pvq.pvqBillDetailId})}"><span
+										class="glyphicon glyphicon-remove-circle"></span></a>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div sec:authorize="hasRole('ADMIN')">
+			<a th:href="@{/pvqManager/pvqBillDesk/billDesk}"
+				class="btn btn-primary">Add PVQ Customer bill</a>
+		</div>
+	</div>
+</body>
+</html>

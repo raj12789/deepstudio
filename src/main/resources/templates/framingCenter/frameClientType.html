@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout" 
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+<title th:text="#{ds.fc.title}">Deep Studio</title>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#frameClientTypeDataTable').DataTable();
+	});	
+</script>
+</head>
+<body>
+	<div layout:fragment="content" class="container">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"
+					th:text="#{fc.frameClientType.table.caption}">Panel title</h3>
+			</div>
+			<div class="panel-body">
+				<table class="table table-hover table-striped table-condensed" id="frameClientTypeDataTable">
+					<thead class="framedata_table_header">
+						<tr>
+							<th scope="col" th:text="#{fc.frameClientType.frameInfoId.label}">Id</th>
+							<th scope="col"
+								th:text="#{fc.frameClientType.frameClientTypeName.label}">Frame
+								ClientType Name</th>
+							<th scope="col"
+								th:text="#{fc.frameClientType.frameClientTypeDesc.label}">Frame
+								ClientType Description</th>
+							<th scope="col"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="fi : ${frameList}">
+							<td th:text="${fi.clientTypeId}">1</td>
+							<td th:text="${fi.clientTypeName}">George</td>
+							<td th:text="${fi.clientDesc}">Washington</td>
+							<td>
+							<div sec:authorize="hasRole('ADMIN')">
+							<a
+								th:href="@{/framingCenter/frameClientType/edit(frameId=${fi.clientTypeId})}"><span
+									class="glyphicon glyphicon-pencil"></span></a> 
+							<a
+								onclick="return removeRecord();"
+								th:href="@{/framingCenter/frameClientType/delete(frameId=${fi.clientTypeId})}"><span
+									class="glyphicon glyphicon-remove-circle"></span></a>
+							</div></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="panel panel-default" sec:authorize="hasRole('ADMIN')">
+			<div class="panel-heading">
+				<h3 class="panel-title">Client Type</h3>
+			</div>
+			<div class="panel-body">
+				<form action="#" th:action="@{/framingCenter/frameClientType/create}"
+					th:object="${objFrame}" method="post" enctype="multipart/form-data"
+					class="form-inline">
+					<ul th:if="${#fields.hasErrors('*')}" class="bg-danger">
+						<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input
+							is incorrect</li>
+					</ul>
+
+					<div class="form-group">
+						<label class="sr-only" for="cType">Type</label> <input type="hidden" th:field="*{clientTypeId}" /> <input
+							class="form-control" type="text" id="cType" th:field="*{clientTypeName}"
+							th:errorclass="fieldError" th:placeholder="#{fc.frameClientType.frameClientTypeName.label}" />
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="cdescription">Description</label>
+						<input class="form-control" type="text" id="cdescription"
+										th:field="*{clientDesc}" th:placeholder="#{fc.frameClientType.frameClientTypeDesc.label}" />
+					</div>
+					<button type="submit" class="btn btn-primary"
+											th:text="#{${frameType + '.frameInfo.button.label'}}">Action</button>					
+				</form>
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>

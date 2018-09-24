@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout" 
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+<title th:text="#{ds.fc.title}">Deep Studio</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/css/datepicker.css}" ></link>
+<script src="/js/bootstrap-datepicker.js"
+	th:src="@{/js/bootstrap-datepicker.js}"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#pvqExpenseBillBookDataTable').DataTable();
+		$('#expenseDate').datepicker('place');
+	    $('#expenseDate').datepicker()
+		    .on('changeDate', function(ev){
+		    	validateDate(this,ev);
+		    });
+	    $('#expenseDate').keypress(
+				function(e) {
+					var key_codes = [ 47, 48, 49, 50, 51, 52, 53, 54,
+							55, 56, 57, 0, 8 ];
+
+					if (!($.inArray(e.which, key_codes) >= 0)) {
+						e.preventDefault();
+					}
+				});
+	});	
+</script>
+</head>
+<body>
+	<div layout:fragment="content" class="container">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"
+					th:text="#{fc.expenseBillBook.table.caption}">Panel title</h3>
+			</div>
+			<div class="panel-body">
+				<table class="table table-hover table-striped table-condensed" id="pvqExpenseBillBookDataTable">
+					<thead>
+						<tr>
+							<th scope="col" th:text="#{fc.expenseBillBook.expenseBillBookId.label}">Id</th>
+							<th scope="col"
+								th:text="#{fc.expenseBillBook.expenseType.label}">Expense
+								Type Name</th>
+							<th scope="col"
+								th:text="#{fc.expenseBillBook.expenseDate.label}">Expense Date
+								</th>
+							<th scope="col"
+								th:text="#{fc.expenseBillBook.expenseDesc.label}">Expense
+								 Description</th>
+							<th scope="col"
+								th:text="#{fc.expenseBillBook.expenseAmt.label}">Expense
+								Amount </th>
+							<th scope="col"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="fi : ${expenseList}">
+							<td th:text="${fi.expenseBillBookId}">1</td>
+							<td th:text="${fi.expenseType.expenseTypeName}">George</td>
+							<td th:text="${#dates.format(fi.expenseDate,'dd/MM/yyyy')}">Washington</td>
+							<td th:text="${fi.expenseDesc}">Washington</td>
+							<td th:text="${fi.expenseAmt}">Washington</td>
+							<td>
+							<div sec:authorize="hasRole('ADMIN')">
+							<a
+								th:href="@{/expenseManager/expenseBillBook/edit(expenseId=${fi.expenseBillBookId})}"><span
+									class="glyphicon glyphicon-pencil"></span></a> 
+							<a
+								onclick="return removeRecord();"
+								th:href="@{/expenseManager/expenseBillBook/delete(expenseId=${fi.expenseBillBookId})}"><span
+									class="glyphicon glyphicon-remove-circle"></span></a>
+							</div></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="panel panel-default" sec:authorize="hasRole('ADMIN')">
+			<div class="panel-heading">
+				<h3 class="panel-title">Expense Bill Book</h3>
+			</div>
+			<div class="panel-body">
+				<form action="#" th:action="@{/expenseManager/expenseBillBook/create}"
+					th:object="${objExpense}" method="post" 
+					class="form-horizontal">
+					<ul th:if="${#fields.hasErrors('*')}" class="bg-danger">
+						<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input
+							is incorrect</li>
+					</ul>
+
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="eType" th:text="#{fc.expenseBillBook.expenseType.label}">Type</label>
+						<div class="col-sm-4">
+						<input type="hidden" th:field="*{expenseBillBookId}" /> 
+						<select th:field="*{expenseType.expenseTypeId}" class="form-control">
+						  		<option th:each="type : ${expenseTypes}" 
+						          th:value="${type.expenseTypeId}"
+						          th:text="${type.expenseTypeName}">Select One</option>
+						</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="eType" th:text="#{fc.expenseBillBook.expenseDate.label}">Expense Date</label>
+						<div class="col-sm-4">
+						<input
+							class="form-control" type="text" id="expenseDate" th:field="*{expenseDate}"
+							 th:placeholder="#{fc.expenseBillBook.expenseDate.label}"  onblur="return validateDate(this,event););"/>
+							<p class="form-control-static text-muted"><span id="errdate" style="color: red">&nbsp;</span></p>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="cdescription" th:text="#{fc.expenseBillBook.expenseDesc.label}">Description</label>
+						<div class="col-sm-4">
+						<textarea rows="3" class="form-control" id="edescription"
+										th:field="*{expenseDesc}" th:placeholder="#{fc.expenseBillBook.expenseDesc.label}" style="resize: none;"></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="col-sm-3 control-label" for="cexpense" th:text="#{fc.expenseBillBook.expenseAmt.label}">Expense Amount</label>
+						<div class="col-sm-4">
+						<input
+							class="form-control" type="text" id="expenseAmount" th:field="*{expenseAmt}"
+							th:errorclass="fieldError" th:placeholder="#{fc.expenseBillBook.expenseAmt.label}" />
+						</div>
+					</div>
+					<br/>
+					<div>
+						<button type="submit" class="btn btn-primary"
+											th:text="#{${expenseType + '.expesneInfo.button.label'}}">Action</button>
+					</div>					
+				</form>
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>

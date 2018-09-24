@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout" 
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+<title th:text="#{ds.fc.title}">Deep Studio</title>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#pvqConcernTypeDataTable').DataTable();
+	});	
+</script>
+</head>
+<body>
+	<div layout:fragment="content" class="container">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"
+					th:text="#{fc.pvqConcernType.table.caption}">Panel title</h3>
+			</div>
+			<div class="panel-body">
+				<table class="table table-hover table-striped table-condensed" id="pvqConcernTypeDataTable">
+					<thead>
+						<tr>
+							<th scope="col" th:text="#{fc.pvqConcernType.pvqConcernTypeId.label}">Id</th>
+							<th scope="col"
+								th:text="#{fc.pvqConcernType.pvqConcernTypeName.label}">PVQ
+								ConcernType Name</th>
+							<th scope="col"
+								th:text="#{fc.pvqConcernType.pvqConcernTypeDesc.label}">PVQ
+								ConcernType Description</th>
+							<th scope="col"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="fi : ${pvqList}">
+							<td th:text="${fi.pvqConcernTypeId}">1</td>
+							<td th:text="${fi.pvqConcernTypeName}">George</td>
+							<td th:text="${fi.pvqConcernTypeDesc}">Washington</td>
+							<td>
+							<div sec:authorize="hasRole('ADMIN')">
+							<a
+								th:href="@{/pvqManager/pvqConcernType/edit(pvqId=${fi.pvqConcernTypeId})}"><span
+									class="glyphicon glyphicon-pencil"></span></a> 
+							<a
+								onclick="return removeRecord();"
+								th:href="@{/pvqManager/pvqConcernType/delete(pvqId=${fi.pvqConcernTypeId})}"><span
+									class="glyphicon glyphicon-remove-circle"></span></a>
+							</div></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="panel panel-default" sec:authorize="hasRole('ADMIN')">
+			<div class="panel-heading">
+				<h3 class="panel-title">Concern Type</h3>
+			</div>
+			<div class="panel-body">
+				<form action="#" th:action="@{/pvqManager/pvqConcernType/create}"
+					th:object="${objPvq}" method="post" enctype="multipart/form-data"
+					class="form-inline">
+					<ul th:if="${#fields.hasErrors('*')}" class="bg-danger">
+						<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input
+							is incorrect</li>
+					</ul>
+
+					<div class="form-group">
+						<label class="sr-only" for="cType">Type</label> <input type="hidden" th:field="*{pvqConcernTypeId}" /> <input
+							class="form-control" type="text" id="cType" th:field="*{pvqConcernTypeName}"
+							th:errorclass="fieldError" th:placeholder="#{fc.pvqConcernType.pvqConcernTypeName.label}" />
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="cdescription">Description</label>
+						<input class="form-control" type="text" id="cdescription"
+										th:field="*{pvqConcernTypeDesc}" th:placeholder="#{fc.pvqConcernType.pvqConcernTypeDesc.label}" />
+					</div>
+					<button type="submit" class="btn btn-primary"
+											th:text="#{${pvqType + '.pvqInfo.button.label'}}">Action</button>					
+				</form>
+			</div>
+		</div>
+
+	</div>
+</body>
+</html>

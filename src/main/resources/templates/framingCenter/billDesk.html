@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+<title>Deep Studio Framing Center Bill Manager</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/css/datepicker.css}" ></link>
+<script src="/js/bootstrap-datepicker.js"
+	th:src="@{/js/bootstrap-datepicker.js}"></script>
+<script type="text/javascript">
+	$(document).ready(
+			function() {
+				$('#billingDate').datepicker('place');
+			    $('#billingDate').datepicker()
+				    .on('changeDate', function(ev){
+				    	validateDate(this,ev);
+				    });
+				var today = new Date();
+				$('#todayDate').text(today);
+				$('#billingDate').keypress(
+						function(e) {
+							var key_codes = [ 47, 48, 49, 50, 51, 52, 53, 54,
+									55, 56, 57, 0, 8 ];
+
+							if (!($.inArray(e.which, key_codes) >= 0)) {
+								e.preventDefault();
+							}
+						});
+				$('.sellingPrice').change(function() {
+					var rowCountId = $(this).attr('id').split("_").pop();
+					var frameDetailId =$('#frameDetails_'+rowCountId).val();
+					var clientTypeId =$('#clientType_'+rowCountId).find('option:selected').val();
+					var sum = 0;
+					if(parseInt(frameDetailId) >= 0 || clientTypeId == 2){
+						$('.sellingPrice').each(function() {
+							sum += Number($(this).val());
+						});
+						$('#totalBillAmount').val(sum);
+					}else{
+						alert('Please Select Frame First');
+						$('#clientType_'+rowCountId).val('-1');
+						$('#quantity_'+rowCountId).val('0');
+		            	$('#actualPrice_'+rowCountId).val('0');
+		            	$('#sellingPrice_'+rowCountId).val('0');
+					}
+				});
+				$('.removeRow').click(function(){
+					var rowCountId = $(this).attr('id').split("_").pop();
+					var updateTotalAmount=$('#totalBillAmount').val()-$('#sellingPrice_'+rowCountId).val();
+					$('#totalBillAmount').val(updateTotalAmount);
+				});
+				$(".clientType,.quantity").change(function() {
+					var rowCountId = $(this).attr('id').split("_").pop();
+					var id = $(this).attr('id');
+					var frameDetailId =$('#frameDetails_'+rowCountId).val();
+					var clientTypeId =$('#clientType_'+rowCountId).find('option:selected').val();
+					var quantity= $('#quantity_'+rowCountId).val();
+					
+					if(parseInt($('#frameDetails_'+rowCountId).val()) >= 0){
+						$.ajax({
+								type: "GET",
+					            url : '/deepStudio/framingCenter/frameBilling/retrieveActualPrice',
+					            datatype: "json",
+					            data: { frameDetail:frameDetailId, clientType: clientTypeId},
+					            success : function(data) {
+					                //alert(data); 
+					                data = JSON.parse(data);
+					                Result = data.Result;
+					                if(id == ('quantity_'+rowCountId)){//OnChange of Quantity
+						                var floatedActualPrice = quantity * Result;
+						                var floatedtotalBillAmt=$('#totalBillAmount').val()-$('#sellingPrice_'+rowCountId).val();
+						                $('#totalBillAmount').val(floatedtotalBillAmt);
+										$('#actualPrice_'+rowCountId).val(floatedActualPrice);
+						            }else{ //OnChange of ClientType
+							            	var floatedtotalBillAmt=$('#totalBillAmount').val()-$('#sellingPrice_'+rowCountId).val();
+							                $('#totalBillAmount').val(floatedtotalBillAmt);
+											//If User not Select Select One
+											if(clientTypeId != '-1'){
+												$('#quantity_'+rowCountId).val('1');
+									        	$('#actualPrice_'+rowCountId).val(Result);
+								            }else{
+								            	$('#quantity_'+rowCountId).val('0');
+								            	$('#actualPrice_'+rowCountId).val('0');
+								            	$('#sellingPrice_'+rowCountId).val('0');
+								            }
+								    }
+					                $('#sellingPrice_'+rowCountId).val('0');
+					            },
+					            error: function(jqXHR, textStatus, errorThrown) {
+					                alert("error:" + textStatus + " exception:" + errorThrown);
+					                }
+					        });
+						}else{
+							alert('Please Select Frame First');
+							$('#clientType_'+rowCountId).val('-1');
+							$('#quantity_'+rowCountId).val('0');
+			            	$('#actualPrice_'+rowCountId).val('0');
+			            	$('#sellingPrice_'+rowCountId).val('0');
+						} 
+					});
+				
+				$("#frame_type,#frame_Number,#frame_thickness,#frame_size").change(function() {
+					var frame_type =$('#frame_type').find('option:selected').val();
+					var frame_Number =$('#frame_Number').find('option:selected').val();
+					var frame_size =$('#frame_size').find('option:selected').val();
+					var frame_thickness =$('#frame_thickness').find('option:selected').val();
+					
+					if(frame_type == 4){
+						$('#frame_Number').val('4');
+						$('#frame_Number').val('1');
+						$('#frame_size').val('15');
+						$('#frame_thickness').val('7');
+						$('#frame_Number').prop('disabled', true);
+						$('#frame_Number').prop('disabled', true);
+						$('#frame_size').prop('disabled', true);
+						$('#frame_thickness').prop('disabled', true);
+					}else{
+						$('#frame_Number').prop('disabled', false);
+						$('#frame_Number').prop('disabled', false);
+						$('#frame_size').prop('disabled', false);
+						$('#frame_thickness').prop('disabled', false);
+					}
+				});
+				$('.choose_frame').click(function() {
+						var rowCountId = $(this).attr('id').split("_").pop();
+						$('#modalbox_id').val(rowCountId);
+						$('#frame_Search_Result').html('');
+					});
+				$("#find_frame").click(function() {
+					var rowCountId = $('#modalbox_id').val();
+					var frameTypeId =$('#frame_type').find('option:selected').val();
+					var frameNumberId =$('#frame_Number').find('option:selected').val();
+					var framethicknessId =$('#frame_thickness').find('option:selected').val();
+					var frameSizeId =$('#frame_size').find('option:selected').val();
+					
+					$('#frame_Search_Result').html('');
+					$('#frame_desc_'+rowCountId).val('');
+						$.ajax({
+							type: "GET",
+				            url : '/deepStudio/framingCenter/frameRate/searchFrame',
+				            datatype: "json",
+				            data: { frameTypeId: frameTypeId, frameNumberId: frameNumberId,
+				            	frameThicknessId: framethicknessId, frameSizeId: frameSizeId},
+				            success : function(data) {
+					            data = JSON.parse(data);
+					            //alert(data.Result);
+					            if(data.Result != ''){
+					            	var frameTypeText =$('#frame_type').find('option:selected').text();
+					            	var frameNumberText =$('#frame_Number').find('option:selected').text();
+					            	var frameThicknessText =$('#frame_thickness').find('option:selected').text();
+					            	var frameSizeText =$('#frame_size').find('option:selected').text();
+									$('#frameDetails_'+rowCountId).val(data.Result);
+									var desc =frameTypeText+',\n'+frameNumberText+',\n'+frameThicknessText+',\n'+frameSizeText;
+									desc = desc.replace(/\s+/g, ' ').trim()
+									$('#frame_desc_'+rowCountId).val(desc);
+									if(data.Result == '420'){
+										$('#frame_desc_'+rowCountId).val('');
+									}
+					            	$('#frame_Search_Result').html(data.Msg);
+					            	$('#frame_result_p').attr('class','bg-success');
+					            	$('#Chooseframe_'+rowCountId).html('Change Concern');
+							    }else{
+							    	$('#frameDetails_'+rowCountId).val('-1');
+							    	$('#frame_Search_Result').html(data.Msg+'<a href="#" th:href="@{/frameDetails}">Please Add frame from Here.</a>');
+							    	$('#frame_result_p').attr('class','bg-warning');
+							    	$('#Chooseframe_'+rowCountId).html('Choose Concern');
+								}
+					          },
+				            error: function(jqXHR, textStatus, errorThrown) {
+				                alert("error:" + textStatus + " exception:" + errorThrown);
+				                }
+				        });
+				});
+			});
+</script>
+</head>
+
+<body>
+	<div layout:fragment="content" class="container">
+		<div class="panel panel-default" sec:authorize="hasRole('ADMIN')">
+			<div class="panel-heading text-muted">
+				<h2 class="panel-title">Bill Desk</h2>
+			</div>
+			<div class="panel-body">
+				<form action="#" th:action="@{/framingCenter/frameBilling/create}"
+					th:object="${billingInfo}" method="post" class="form-horizontal">
+						<ul th:if="${#fields.hasErrors('*')}" class="bg-danger">
+							<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input
+								is incorrect</li>
+						</ul>
+						
+						<div class="form-group">
+							<input type="text" hidden="hidden" th:field="*{custBillingId}" />
+							<label for="todayDate" class="col-sm-2 control-label" th:text="#{fc.bd.todayDate.label}">Today Date</label>
+							<div class="col-sm-5">
+							<p class="form-control-static text-muted"><span id="todayDate">&nbsp;</span></p> 
+							</div>
+						</div>
+						<div class="form-group" th:if="${billingInfo.getCustBillingId()} == null">
+							<label for="custBillNumber" class="col-sm-2 control-label" th:text="#{fc.bd.custBillNumber.label}">Bill Number</label> 
+							<div class="col-sm-4">
+							<input type="text" th:field="*{custBillNumber}" 
+									class="form-control"
+									th:errorclass="fieldError"
+									th:placeholder="#{fc.bd.custBillNumber.label}" />
+							</div>		
+						</div>
+						<div class="form-group" th:if="${billingInfo.getCustBillingId()} != null">
+							<label for="custBillNumber" class="col-sm-2 control-label" th:text="#{fc.bd.custBillNumber.label}">Bill Number</label> 
+							<div class="col-sm-4">
+							<input type="text" th:field="*{custBillNumber}" 
+									class="form-control"
+									th:errorclass="fieldError"
+									th:placeholder="#{fc.bd.custBillNumber.label}" readonly="readonly"/>
+							</div>		
+						</div>
+						<div class="form-group">
+							<label for="billDate"  class="col-sm-2 control-label"  th:text="#{fc.bd.billingDate.label}">Bill Date (MM-DD-YYYY)</label>
+							<div class="col-sm-4">
+							<input type="text" id="billingDate" th:field="*{billDate}"
+									class="form-control" 
+									onblur="return validateDate(this,event);" /> 
+									<p class="form-control-static text-muted"><span id="errdate" style="color: red">&nbsp;</span></p>
+							</div>
+						</div>
+						
+						<div class="form-group">
+							<label for="billStatus" class="col-sm-2 control-label" th:text="#{fc.bd.billStatus.label}">Bill Status</label> 
+							<div class="col-sm-4">
+								<select
+									th:field="*{billStatus}"
+									class="form-control" style="width: 100px;" >
+										<option th:each="type : ${billStatus}" 
+						          			th:value="${type}"
+						          			th:text="${type}">Select One</option>
+								</select>
+							</div>	
+						</div>
+						
+						<div class="form-group">
+							<label for="custName" class="col-sm-2 control-label" th:text="#{fc.bd.custName.label}">Customer Name</label>
+							<div class="col-sm-4">
+								<input type="text" th:field="*{custName}"
+									class="form-control" 
+									th:errorclass="fieldError" 
+									th:placeholder="#{fc.bd.custName.label}"/>
+							</div>	
+						</div>
+		
+						<div class="form-group">
+							<label for="custMobno" class="col-sm-2 control-label" th:text="#{fc.bd.custMobno1.label}"> Mobile Number</label> 
+							<div class="col-sm-4">
+							<input type="text" id="mobileNumber" th:field="*{custMobno}"
+								class="form-control"
+								th:errorclass="fieldError"
+								th:placeholder="#{fc.bd.custMobno1.label}" />
+							</div>	
+						</div>
+		
+						<div class="form-group">
+							<label for="custAddress" class="col-sm-2 control-label" th:text="#{fc.bd.custAddress.label}">Customer Address</label>
+							<div class="col-sm-4">
+							 <input type="text" th:field="*{custAddress}" 
+							 		class="form-control"
+							 		th:placeholder="#{fc.bd.custAddress.label}"/>
+							 </div>		
+						</div>
+						
+						<div class="form-group has-success">
+							<label for="finalBillAmount" class="col-sm-2 control-label" th:text="#{fc.bd.totalBillAmount.label}">Billing Amount</label>
+							<div class="col-sm-4 input-group">
+							<div class="input-group-addon">INR</div>
+							<input type="text" id="totalBillAmount"
+								th:field="*{finalBillAmount}" 
+								class="form-control"
+								th:placeholder="#{fc.bd.totalBillAmount.label}" readonly="readonly" />
+							</div>	
+						</div>
+						
+						<div class="form-group has-success">
+							<label for="depositeBillAmount" class="col-sm-2 control-label" th:text="#{fc.bd.depositeBillAmount.label}">Add/Deposite Amount</label>
+							<div class="col-sm-4 input-group">
+							<div class="input-group-addon">INR</div>
+							<input type="text" id="depositeBillAmount"
+								th:field="*{depositeAmount}" 
+								class="form-control"
+								th:placeholder="#{fc.bd.depositeBillAmount.label}" />
+							</div>
+						</div>
+						<div class="form-group has-success">
+							<label for="paidBillAmount" class="col-sm-2 control-label" th:text="#{fc.bd.totalPaidBillAmount.label}">Total Paid Amount</label>
+							<div class="col-sm-4 input-group">
+							<div class="input-group-addon">INR</div>
+							<input type="text" id="totalPaidBillAmount"
+								th:field="*{totalPaidAmount}" 
+								class="form-control"
+								th:placeholder="#{fc.bd.totalPaidBillAmount.label}" readonly="readonly" />
+							</div>
+						</div>
+						<div class="form-group has-success">
+							<label for="dueBillAmount" class="col-sm-2 control-label" th:text="#{fc.bd.dueAmount.label}">Due Billing Amount</label>
+							<div class="col-sm-4 input-group">
+							<div class="input-group-addon">INR</div>
+							<input type="text" id="dueBillAmount"
+								th:field="*{dueAmount}" 
+								class="form-control"
+								th:placeholder="#{fc.bd.dueAmount.label}" readonly="readonly" />
+							</div>
+						</div>
+						
+						<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title" >Frame Billing Concerns</h3>
+						</div>
+						<div class="panel-body">
+								<table class="table table-hover table-striped table-condensed">
+									<thead class="framedata_table_header">
+										<tr>
+											<th scope="col" th:text="#{fc.bd.srno.label}">Sr No.</th>
+											<th scope="col" th:text="#{fc.bd.framedetails.label}">Frame Details</th>
+											<th scope="col" th:text="#{fc.bd.frameclientType.label}">Frame Client Type</th>
+											<th scope="col" th:text="#{fc.bd.framedesc.label}">Description</th>
+											<th scope="col" th:text="#{fc.bd.framequantity.label}">Quantity</th>
+											<th scope="col" th:text="#{fc.bd.frameActualPrice.label}">Actual Price</th>
+											<th scope="col" th:text="#{fc.bd.frameSellingPrice.label}">Selling Price</th>
+											<th>
+												<button type="submit" name="addRow" id="addRow"
+													th:text="#{fc.bd.addNewRow.label}" class="btn btn-primary btn-sm">Add row</button>
+											</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="row,rowStat : *{frameCustBillingInfoDetail}">
+											<td th:text="${rowStat.count}" th:id="'rowCount_'+${rowStat.count}"></td>
+											<td>
+											<input type="hidden"  th:field="*{frameCustBillingInfoDetail[__${rowStat.index}__].billDetailId}" />
+											<input type="hidden"
+													class="frameDetails"
+													th:id="'frameDetails_'+${rowStat.count}" 
+													th:field="*{frameCustBillingInfoDetail[__${rowStat.index}__].frameDetails.frameQualifiedId}"></input>
+												<button type="button" th:id="'Chooseframe_'+${rowStat.count}" class="btn btn-success choose_frame" data-toggle="modal" data-target="#exampleModal">&nbsp;Choose Concern</button>
+								 			</td>
+								 			<td><select
+												th:field="*{frameCustBillingInfoDetail[__${rowStat.index}__].frameClientType.clientTypeId}"
+												class="form-control clientType" style="width: 150px;" th:id="'clientType_'+${rowStat.count}">
+													<option th:text="'Select One'" th:value="-1"></option>
+													<option th:each="type : ${frameClientTypes}"
+														th:value="${type.clientTypeId}"
+														th:text="${type.clientTypeName}">Select One</option>
+											</select></td>
+								 			<td>
+								 				<textarea rows="3" class="form-control" th:id="'frame_desc_'+${rowStat.count}" 
+								 					th:field="*{frameCustBillingInfoDetail[__${rowStat.index}__].concernDesciption}" 
+								 					th:placeholder="#{fc.bd.framedesc.label}" style="resize: none;"></textarea>
+								 			</td>
+											<td><input class="form-control quantity" type="text"
+												th:id="'quantity_'+${rowStat.count}"
+												th:field="*{frameCustBillingInfoDetail[__${rowStat.index}__].quantity}"
+												th:errorclass="fieldError" style="width: 80px;" 
+												th:placeholder="#{fc.bd.framequantity.label}"/></td>
+											<td><input class="form-control actualPrice" type="text"
+												th:id="'actualPrice_'+${rowStat.count}" 
+												th:field="*{frameCustBillingInfoDetail[__${rowStat.index}__].actualRate}"
+												th:errorclass="fieldError" style="width: 80px;"
+												readonly="readonly" /></td>
+											<td><input class="form-control sellingPrice" type="text"
+												th:id="'sellingPrice_'+${rowStat.count}"
+												th:field="*{frameCustBillingInfoDetail[__${rowStat.index}__].sellingRate}"
+												th:errorclass="fieldError" style="width: 80px;"
+												th:placeholder="#{fc.bd.frameSellingPrice.label}" /></td>
+											<td>
+												<button type="submit" name="removeRow" 
+													th:id="'removeRow_'+${rowStat.count}"
+													class="close removeRow" aria-label="Close"
+													th:value="${rowStat.index}" >
+													<span aria-hidden="true">&times;</span>
+												</button>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div>
+							<button class="btn btn-success" type="submit" name="saveFrameBill" id="saveFrameBill" th:text="#{${billingInfoType} + '.fc.bd.title.bill'}"
+								onclick="return createFinalBill(this);">Add New Bill</button>
+						</div>
+				</form>
+			</div>
+		</div>
+		<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true" style="width:100%" data-backdrop="false">
+				  <div class="modal-dialog">
+				    <div class="modal-content">
+				      <div class="modal-header">
+				        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+				        <h4 class="modal-title" id="exampleModalLabel">Search for Frames</h4>
+				      </div>
+				      <div class="modal-body">
+				        <form action="#" 
+						th:object="${objFrameDetails}" method="post"  class="form-horizontal">
+						<p class="" id="frame_result_p"><span id="frame_Search_Result">&nbsp;</span></p>
+						<input type="hidden" id="modalbox_id" value=""></input>
+				          <div class="form-group">
+				            <label for="frame-type" class="col-sm-5 control-label">Frame Type:</label>
+				            <div class="col-sm-4">
+				            <select th:field="*{frameInfo.frameInfoId}" th:id="'frame_type'" class="form-control">
+						  		<option th:each="type : ${frameTypes}" 
+						          th:value="${type.frameInfoId}"
+						          th:text="${type.frameType}">Select One</option>
+							</select>
+							</div>
+				          </div>
+				          <div class="form-group">
+				            <label for="frame-number" class="col-sm-5 control-label">Frame Number:</label>
+				            <div class="col-sm-4">
+				            <select th:field="*{frameNumber.frameNumberId}" th:id="'frame_Number'" class="form-control">
+									<option th:each="type : ${frameNumbers}" 
+							          	th:value="${type.frameNumberId}"
+							          	th:text="${type.frameNumber}">Select One</option>
+							</select>
+							</div>
+				          </div>
+				          <div class="form-group">
+				            <label for="frame-thickness" class="col-sm-5 control-label">Frame Thickness:</label>
+				            <div class="col-sm-4">
+				            <select th:field="*{frameThickness.frameThicknessId}" th:id="'frame_thickness'" class="form-control">
+								<option th:each="type : ${frameThickness}"
+										th:value="${type.frameThicknessId}"
+										th:text="|${type.frameThicknessSize} ${type.frameMeasurementsType}|">Select One</option>
+							</select>
+							</div>
+				          </div>
+				          <div class="form-group">
+				            <label for="frame-size" class="col-sm-5 control-label">Frame Size:</label>
+				            <div class="col-sm-4">
+				            <select th:field="*{frameSize.frameSizeId}" th:id="'frame_size'" class="form-control">
+						  	<option th:each="type : ${frameSizes}" 
+						        th:value="${type.frameSizeId}"
+						        th:text="|${type.frameSizeWidth} * ${type.frameSizeHeight} ${type.frameMeasurementsType}|">Select One</option>
+							</select>
+							</div>
+				          </div>
+				          <div>
+				          	<p class=""></p>
+				          </div>
+				        </form>
+				      </div>
+				      <div class="modal-footer">
+				        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				        <button type="button" class="btn btn-primary" id="find_frame">Find Frame</button>
+				      </div>
+				    </div>
+				  </div>
+				</div>
+		</div>
+</body>
+</html>

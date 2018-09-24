@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+	<title th:text="#{ds.fc.title}">Deep Studio</title>	
+	<script type="text/javascript">
+		$(document).ready(function() {
+			$('#frameDetailsDataTable').DataTable();
+		});	
+	</script>
+</head>
+<body>
+	<div layout:fragment="content" class="container">
+			<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title" th:text="#{fc.frameDetails.table.caption}">Frame Detail Records</h3>
+			</div>
+			<div class="panel-body">
+			<table class="table table-hover table-striped table-condensed" id="frameDetailsDataTable">
+					<thead>
+						<tr>
+							<th scope="col" th:text="#{fc.frameDetails.frameDetailsId.label}">Id</th>
+							<th scope="col" th:text="#{fc.frameDetails.frameType.label}">Frame Type </th>
+							<th scope="col" th:text="#{fc.frameDetails.frameNumber.label}">Frame Number </th>
+							<th scope="col" th:text="#{fc.frameDetails.frameThickness.label}">Frame Thickness</th>
+							<th scope="col" th:text="#{fc.frameDetails.frameWidth.label}">Frame Size</th>
+							<th scope="col" th:text="#{fc.frameDetails.frameDesc.label}">Description</th>						
+							<th scope="col" ></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="fi : ${frameDetailsList}">
+							<td th:text="${fi.frameQualifiedId}">1</td>
+							<td th:text="${fi.frameInfo.frameType}">1</td>
+							<td th:text="${fi.frameNumber.frameNumber}">1</td>
+							<td th:text="|${fi.frameThickness.frameThicknessSize} ${fi.frameThickness.frameMeasurementsType}|">1</td>
+							<td th:text="|${fi.frameSize.frameSizeWidth}* ${fi.frameSize.frameSizeHeight} ${fi.frameSize.frameMeasurementsType}|">1</td>
+							<td th:text="${fi.frameDescription}">gwash</td>						
+							<td>
+								<div sec:authorize="hasRole('ADMIN')">
+									<a th:href="@{/framingCenter/frameDetails/edit(frameQualifiedId=${fi.frameQualifiedId})}" ><span class="glyphicon glyphicon-pencil"></span></a>
+									<a onclick="return removeRecord();" th:href="@{/framingCenter/frameDetails/delete(frameQualifiedId=${fi.frameQualifiedId})}"><span class="glyphicon glyphicon-remove-circle"></span></a>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="panel panel-default" sec:authorize="hasRole('ADMIN')">
+			<div class="panel-heading">
+				<h3 class="panel-title">Frame Details</h3>
+			</div>
+			<div class="panel-body">
+				<form action="#" th:action="@{/framingCenter/frameDetails/create}"
+					th:object="${objFrameDetails}" method="post" class="form-inline">
+					<ul th:if="${#fields.hasErrors('*')}" class="bg-danger">
+						<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input
+							is incorrect</li>
+					</ul>
+					<div class="form-group">
+						<label class="sr-only" for="ftype">Type</label>
+						<input type="text" hidden="hidden" th:field="*{frameQualifiedId}" />
+						<select th:field="*{frameInfo.frameInfoId}" class="form-control">
+						  		<option th:each="type : ${frameTypes}" 
+						          th:value="${type.frameInfoId}"
+						          th:text="${type.frameType}">Select One</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="fNumber">Number</label>
+						<select th:field="*{frameNumber.frameNumberId}" class="form-control">
+									<option th:each="type : ${frameNumbers}" 
+							          	th:value="${type.frameNumberId}"
+							          	th:text="${type.frameNumber}">Select One</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="fThickness">Frame Thickness</label>
+						<select th:field="*{frameThickness.frameThicknessId}" class="form-control">
+								<option th:each="type : ${frameThickness}" 
+										th:value="${type.frameThicknessId}"
+										th:text="|${type.frameThicknessSize} ${type.frameMeasurementsType}|">Select One</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="fWidthHeight">Frame Width Height</label>
+						<select th:field="*{frameSize.frameSizeId}" class="form-control">
+						  	<option th:each="type : ${frameSizes}" 
+						        th:value="${type.frameSizeId}"
+						        th:text="|${type.frameSizeWidth} * ${type.frameSizeHeight} ${type.frameMeasurementsType}|">Select One</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="fDesc">Frame Description</label>
+						<input class="form-control" type="text" th:field="*{frameDescription}" th:errorclass="fieldError"
+						th:placeholder="#{fc.frameDetails.frameDesc.label}"/>
+					</div>
+					<button type="submit" class="btn btn-primary" th:text="#{${frameDetailsType + '.frameInfo.button.label'}}">Action</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

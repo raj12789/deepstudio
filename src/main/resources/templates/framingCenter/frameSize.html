@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+	<title th:text="#{ds.fc.title}">Deep Studio</title>
+	<script>
+	$(document).ready(function(){
+		$('#frameSizeChart').on('change', function(evt){
+			 var files = evt.target.files; // FileList object
+				
+			    // Loop through the FileList and render image files as thumbnails.
+			    for (var i = 0, f; f = files[i]; i++) {
+			
+			      // Only process image files.
+			      if (!f.type.match('image.*')) {
+			        continue;
+			      }
+			
+			      var reader = new FileReader();
+			
+			      // Closure to capture the file information.
+			      reader.onload = (function(theFile) {
+			        return function(e) {          
+			          $('#thumbImg').attr('src', e.target.result);
+			        };
+			      })(f);
+			
+			      // Read in the image file as a data URL.
+			      reader.readAsDataURL(f);
+			    }
+		 });	
+
+		$(document).ready(function() {
+			$('#frameSizeDataTable').DataTable();
+		});	
+	});
+	
+	
+	</script>
+</head>
+<body>
+	<div layout:fragment="content" class="container">
+			<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title" th:text="#{fc.frameSize.table.caption}">Frame Size Records</h3>
+			</div>
+			<div class="panel-body">
+				<table class="table table-hover table-striped table-condensed" id="frameSizeDataTable">
+					<thead class="framedata_table_header">
+						<tr>
+							<th scope="col" th:text="#{fc.frameSize.frameInfoId.label}">Id</th>
+							<th scope="col" th:text="#{fc.frameSize.frameSizeWidth.label}">Frame Width</th>
+							<th scope="col" th:text="#{fc.frameSize.frameSizeHeight.label}">Frame Height</th>
+							<th scope="col" th:text="#{fc.frameSize.frameSizeMeasurement.label}">Frame Measurements</th>
+							<th scope="col" th:text="#{fc.frameSize.frameSizeDesc.label}">Frame Description</th>
+							<th scope="col" th:text="#{fc.frameSize.frameSizeChart.label}">FrameSize Chart Photos</th>
+							<th scope="col" ></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="fi : ${frameList}">
+							<td th:text="${fi.frameSizeId}">1</td>
+							<td th:text="${fi.frameSizeWidth}">1</td>
+							<td th:text="${fi.frameSizeHeight}">gwash</td>
+							<td th:text="${fi.frameMeasurementsType}">George</td>
+							<td th:text="${fi.frameDesc}">Washington</td>
+							<td th:text="${fi.frameSizeChart}">Washington</td>
+							<td>
+								<div sec:authorize="hasRole('ADMIN')">
+									<a th:href="@{/framingCenter/frameSize/edit(frameId=${fi.frameSizeId})}" ><span class="glyphicon glyphicon-pencil"></span></a>
+									<a onclick="return removeRecord();" th:href="@{/framingCenter/frameSize/delete(frameId=${fi.frameSizeId})}"><span class="glyphicon glyphicon-remove-circle"></span></a>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="panel panel-default" sec:authorize="hasRole('ADMIN')">
+			<div class="panel-heading">
+				<h3 class="panel-title">Frame Size</h3>
+			</div>
+			<div class="panel-body">
+				<form action="#" th:action="@{/framingCenter/frameSize/create}"
+					th:object="${objFrame}" method="post" enctype="multipart/form-data" class="form-inline">
+					<ul th:if="${#fields.hasErrors('*')}" class="bg-danger">
+						<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input
+							is incorrect</li>
+					</ul>
+						<div class="form-group">
+							<label class="sr-only" for="ftype">Type</label>
+							<input type="text" hidden="hidden" th:field="*{frameSizeId}" />	
+						</div>
+						<div class="form-group">
+							<label class="sr-only" for="frameSizeWidth">Type</label>								 
+							<input class="form-control" type="text" id="frameSizeWidth" th:field="*{frameSizeWidth}" 
+									th:errorclass="fieldError"
+									th:placeholder="#{fc.frameSize.frameSizeWidth.label}"/>
+						</div>
+						<div class="form-group">
+							<label class="sr-only" for="frameSizeHeight">Type</label>	
+							<input class="form-control" type="text" id="frameSizeHeight" th:field="*{frameSizeHeight}" 
+									th:errorclass="fieldError"
+									th:placeholder="#{fc.frameSize.frameSizeHeight.label}" />
+						</div>
+						<div class="form-group">
+							<label class="sr-only" for="fMeasurement">Type</label>
+							<select th:field="*{frameMeasurementsType}" class="form-control">
+						  		<option th:each="type : ${measurement}" 
+						          th:value="${type}"
+						          th:text="${type}">Select One</option>
+							</select>
+						</div>
+						<div class="form-group">
+							<label class="sr-only" for="fDesc">Frame Desc</label>
+							<input class="form-control" id="fDesc" type="text" th:field="*{frameDesc}"
+								   th:placeholder="#{fc.frameSize.frameSizeDesc.label}" />
+						</div>
+						<div class="form-group">
+							<label class="sr-only" for="frameSizeChart">FrameSize Chart</label>	
+							<input type="file" id="frameSizeChart" name="file" class="btn btn-default"></input>
+						</div>
+						<div class="form-group">
+							<img src="" id="thumbImg" width="50" height="50"></img>
+						</div>
+						<button type="submit" class="btn btn-primary" th:text="#{${frameType + '.frameInfo.button.label'}}">Action</button>
+				</form>
+			</div>
+		</div>	
+	</div>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3" lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="" />
+<meta name="author" content="" />
+<link rel="icon" href="../../favicon.ico"></link>
+
+<title th:text="#{ds.fc.title}">Deep Studio</title>
+
+<link
+	href="http://cdn.jsdelivr.net/webjars/bootstrap/3.2.0-2/css/bootstrap.min.css"
+	th:href="@{/webjars/bootstrap/3.2.0-2/css/bootstrap.min.css}"
+	rel="stylesheet" media="screen"></link>
+<!-- Custom styles for this template -->
+<link th:href="@{/css/navbar-fixed-top.css}"
+	href="../../navbar-fixed-top.css" rel="stylesheet"></link>
+<link rel="stylesheet" type="text/css"
+ 	href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"></link>
+<link
+	href="http://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0-beta.3/css/select2.min.css"
+	th:href="@{/webjars/select2/3.5.2/select2.css}" rel="stylesheet"></link>
+	
+<!-- Bootstrap core JavaScript
+    ================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="http://cdn.jsdelivr.net/webjars/jquery/2.1.1/jquery.min.js"
+	th:src="@{/webjars/jquery/2.1.1/jquery.min.js}"></script>
+
+<script
+	src="http://cdn.jsdelivr.net/webjars/bootstrap/3.2.0-2/js/bootstrap.min.js"
+	th:src="@{/webjars/bootstrap/3.2.0-2/js/bootstrap.min.js}"></script>
+
+<script
+	src="http://cdnjs.cloudflare.com/ajax/libs/select2/4.0.0-beta.3/js/select2.min.js"
+	th:src="@{/webjars/select2/3.5.2/select2.min.js}"></script>
+
+
+<script src="/js/deepScripts.js" th:src="@{/js/deepScripts.js}"></script>
+<script type="text/javascript"
+	src="//cdn.datatables.net/1.10.5/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript"
+	src="//cdn.datatables.net/plug-ins/f2c75b7247b/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+</head>
+
+<body>
+
+	<!-- Fixed navbar -->
+	<nav class="navbar navbar-default navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed"
+					data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+					aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" th:href="@{/}" href="#"><span
+					class="glyphicon glyphicon-home"></span></a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<ul class="nav navbar-nav">
+					<li><a th:href="@{/welcome}" href="#">Home</a></li>
+					<li sec:authorize="hasAnyRole('ADMIN','SUPER_ADMIN')"><a th:href="@{/users}" href="#">Users</a></li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle"
+						data-toggle="dropdown" role="button" aria-expanded="false">Framing
+							Center <span class="caret"></span>
+					</a>
+						<ul class="dropdown-menu" role="menu">
+							<li><a th:href="@{/framingCenter/frameInfo}" href="#">Frame Type
+									Information</a></li>
+							<li><a th:href="@{/framingCenter/frameThickness}" href="#">Frame
+									Thickness Information</a></li>
+							<li><a th:href="@{/framingCenter/frameNumber}" href="#">Frame Number
+									Information</a></li>
+							<li><a th:href="@{/framingCenter/frameSize}" href="#">Frame Size
+									Information</a></li>
+							<li><a th:href="@{/framingCenter/frameClientType}" href="#">Frame
+									Client Type Information</a></li>
+							<li><a th:href="@{/framingCenter/frameDetails}" href="#">Frame Details</a></li>
+							<li><a th:href="@{/framingCenter/frameRate}" href="#">Frame Rate</a></li>
+							<li><a th:href="@{/framingCenter/frameBilling/viewAllBills}" href="#">Frame
+									Customer Bill</a></li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle"
+						data-toggle="dropdown" role="button" aria-expanded="false">PVQ Manager
+						 <span class="caret"></span></a>
+						 <ul class="dropdown-menu" role="menu">
+							<li><a th:href="@{/pvqManager/pvqConcernType}" href="#">PVQ Concern Type
+									Information</a>
+							</li>
+							<li><a th:href="@{/pvqManager/pvqConcernRate}" href="#">PVQ Concern Rate
+									Information</a>
+							</li>
+							<li><a th:href="@{/pvqManager/pvqBillDesk/viewAllBills}" href="#">PVQ Customer Bill</a>
+							</li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle"
+						data-toggle="dropdown" role="button" aria-expanded="false">Expense Manager
+						 <span class="caret"></span></a>
+						 <ul class="dropdown-menu" role="menu">
+							<li><a th:href="@{/expenseManager/expenseType}" href="#">Expense Type
+									Information</a>
+							</li>
+							<li><a th:href="@{/expenseManager/expenseBillBook}" href="#">Expense Bill Book
+									Information</a>
+							</li>
+						</ul>
+					</li>
+					<li class="dropdown"><a href="#" class="dropdown-toggle"
+						data-toggle="dropdown" role="button" aria-expanded="false">Reports Manager
+						 <span class="caret"></span></a>
+						 <ul class="dropdown-menu" role="menu">
+							<li><a th:href="@{/reportsManager/generateExcel}" href="#">Generate Excel Reports</a>
+							</li>
+						</ul>
+					</li>				
+					<li><a href="#logout"><form th:action="@{/logout}" method="post">
+								<input type="hidden" name="${_csrf.parameterName}"
+									value="${_csrf.token}" />
+								<button type="submit">Log out</button>
+							</form></a></li>
+					
+				</ul>
+			</div>
+			<!--/.nav-collapse -->
+		</div>
+	</nav>
+
+	<div class="container">
+
+		<!-- Main component for a primary marketing message or call to action 
+      <div class="jumbotron">
+        <h1>Deep Studio</h1>
+        <p>Loreum ipsum Loreum ipsum Loreum ipsum Loreum ipsum Loreum ipsum Loreum ipsum Loreum ipsum Loreum ipsum Loreum ipsumLoreum ipsum Loreum ipsum Loreum ipsum Loreum ipsum.</p>
+        <p>
+          <a class="btn btn-lg btn-primary" href="../../components/#navbar" role="button">View navbar docs &raquo;</a>
+        </p>
+      </div>-->
+
+		<div class="page-header">
+			<h1>Deep Studio</h1>
+		</div>
+		<!-- 
+		<div>
+			<img src="../images/deeplogo.jpg" th:src="@{/images/deeplogo.jpg}"
+				alt="Deep logo" />
+		</div>
+		 -->
+		<br />
+	</div>
+	<!-- /container -->
+
+	<div layout:fragment="content">home.html Content Goes Here</div>
+</body>
+</html>

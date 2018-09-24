@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3" lang="en">
+<head>
+<title th:text="#{ds.fc.title}">Deep Studio</title>
+<script>
+	$(document).ready(function() {
+		
+		$('#framePhoto').on('change', function(evt) {
+			var files = evt.target.files; // FileList object
+
+			// Loop through the FileList and render image files as thumbnails.
+			for (var i = 0, f; f = files[i]; i++) {
+
+				// Only process image files.
+				if (!f.type.match('image.*')) {
+					continue;
+				}
+
+				var reader = new FileReader();
+
+				// Closure to capture the file information.
+				reader.onload = (function(theFile) {
+					return function(e) {
+						$('#thumbImg').attr('src', e.target.result);
+					};
+				})(f);
+
+				// Read in the image file as a data URL.
+				reader.readAsDataURL(f);
+			}
+		});
+
+		
+		$(document).ready(function() {
+			$('#frameInfoDataTable').DataTable();
+		});
+		
+	});
+</script>
+</head>
+<body>
+	<div layout:fragment="content" class="container">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title" th:text="#{fc.frameInfo.table.caption}">Panel
+					title</h3>
+			</div>
+			<div class="panel-body">
+				<table class="table table-hover table-striped table-condensed" id="frameInfoDataTable">
+					<thead>
+						<tr>
+							<th scope="col" th:text="#{fc.frameInfo.frameInfoId.label}">Id</th>
+							<th scope="col" th:text="#{fc.frameInfo.frameType.label}">Frame
+								Type</th>
+							<th scope="col" th:text="#{fc.frameInfo.frameDesc.label}">Frame
+								Description</th>
+							<th scope="col" th:text="#{fc.frameInfo.frameTypePhoto.label}">Frame
+								Photo</th>
+							<th scope="col"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="fi : ${frameInfos}">
+							<td th:text="${fi.frameInfoId}">1</td>
+							<td th:text="${fi.frameType}">George</td>
+							<td th:text="${fi.frameDesc}">Washington</td>
+							<td th:text="${fi.frameTypePhoto}">gwash</td>
+							<td>
+								<div sec:authorize="hasRole('ADMIN')">
+									<a
+										th:href="@{/framingCenter/frameInfo/edit(frameInfoId=${fi.frameInfoId})}"><span
+										class="glyphicon glyphicon-pencil"></span></a> 
+									<a
+										onclick="return removeRecord();"
+										th:href="@{/framingCenter/frameInfo/delete(frameInfoId=${fi.frameInfoId})}"><span
+											class="glyphicon glyphicon-remove-circle"></span></a>
+								</div>				
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div class="panel panel-default" sec:authorize="hasRole('ADMIN')">
+			<div class="panel-heading">
+				<h3 class="panel-title">Frame Type</h3>
+			</div>
+			<div class="panel-body">
+				<form action="#" th:action="@{/framingCenter/frameInfo/create}"
+					th:object="${frameInfo}" method="post"
+					enctype="multipart/form-data" class="form-inline">
+					<ul th:if="${#fields.hasErrors('*')}" class="bg-danger">
+						<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input
+							is incorrect</li>
+					</ul>
+					<div class="form-group">
+						<label class="sr-only" for="ftype">Type</label> 
+						<input type="hidden" th:field="*{frameInfoId}" /> 
+						<input
+							class="form-control" type="text" id="ftype"
+							th:field="*{frameType}" th:errorclass="fieldError"
+							th:placeholder="#{fc.frameInfo.frameType.label}"/>
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="fdescription">Description</label> <input
+							class="form-control" type="text" id="fdescription"
+							th:field="*{frameDesc}"
+							th:placeholder="#{fc.frameInfo.frameDesc.label}" />
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="framePhoto">Photo</label> <input
+							type="file" id="framePhoto" name="file" class="form-control" />
+					</div>
+					<div class="form-group">
+						<img src="" id="thumbImg" class="form-control" width="50" alt=""
+							height="50" />
+					</div>
+					<button type="submit" class="btn btn-primary"
+						th:text="#{${frameInfoType + '.frameInfo.button.label'}}">Action</button>
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

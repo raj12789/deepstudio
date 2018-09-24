@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+<title>Deep Studio Bill Report</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript">
+
+$(document).ready(
+		function() {
+				$( "#generatePvqBillReport" ).click(function() {
+					$('#frmBillSummaryReport').attr('action','/deepStudio/reportsManager/generateExcel/downloadPvqExcelReport');
+				    $('#frmBillSummaryReport').submit();
+				});
+				$( "#generateFrameBillReport" ).click(function() {
+					$('#frmBillSummaryReport').attr('action','/deepStudio/reportsManager/generateExcel/downloadFrameExcelReport');
+				    $('#frmBillSummaryReport').submit();
+				});
+				
+		});
+</script>
+</head>
+<body >
+	<div layout:fragment="content" class="container">
+		<div class="panel panel-default" sec:authorize="hasRole('ADMIN')">
+			<div class="panel-heading text-muted">
+				<h2 class="panel-title">Bill Report</h2>
+			</div>
+			<div class="panel-body">
+				<form action="#" id="frmBillSummaryReport" class="form-horizontal">
+					<div class="row" >
+						<div class="col-xs-12 col-sm-6 col-md-8">
+						<h4><label class="control-label" for="frameBillReports">Framing Center Bill Report</label></h4>
+						</div>
+						<div class="col-xs-6 col-md-4">
+						<button class="btn btn-primary" type="button" name="generateFrameBillReport" id="generateFrameBillReport" th:text="#{fc.bd.button.generate}"
+								>Generate PVQ Bill</button>
+						</div>
+					</div>
+					<div class="row" >
+						<div class="col-xs-12 col-sm-6 col-md-8">
+						<h4><label class="control-label" for="pvqBillReports">Photography Videography Bill Report</label></h4>
+						</div>
+						<div class="col-xs-6 col-md-4">
+						<button class="btn btn-primary" type="button" name="generatePvqBillReport" id="generatePvqBillReport" th:text="#{fc.bd.button.generate}"
+								>Generate PVQ Bill</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

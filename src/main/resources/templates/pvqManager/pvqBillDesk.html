@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+<title>Deep Studio Framing Center Bill Manager</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="stylesheet" type="text/css" media="all"
+	th:href="@{/css/datepicker.css}" ></link>
+<script src="/js/bootstrap-datepicker.js"
+	th:src="@{/js/bootstrap-datepicker.js}"></script>
+<script type="text/javascript">
+	$(document).ready(
+			function() {
+				$('#billingDate').datepicker('place');
+			    $('#billingDate').datepicker()
+				    .on('changeDate', function(ev){
+				    	validateDate(this,ev);
+				    });
+			    $('.orderDate').datepicker('place');
+			    $('#orderDate').datepicker()
+				    .on('changeDate', function(ev){
+				    	validateDate(this,ev);
+				    });
+			    
+				var today = new Date();
+				$('#todayDate').text(today);
+				$('#billingDate').keypress(
+						function(e) {
+							var key_codes = [ 47, 48, 49, 50, 51, 52, 53, 54,
+									55, 56, 57, 0, 8 ];
+
+							if (!($.inArray(e.which, key_codes) >= 0)) {
+								e.preventDefault();
+							}
+						});
+				$('.sellingPrice').change(function() {
+					var rowCountId = $(this).attr('id').split("_").pop();
+					var concernTypeId =$('#concernType_'+rowCountId).find('option:selected').val();
+					var sum = 0;
+					if(parseInt(concernTypeId) >= 0){
+						$('.sellingPrice').each(function() {
+							sum += Number($(this).val());
+						});
+						$('#totalBillAmount').val(sum);
+					}else{
+						alert('Please Select Concern Type First');
+						$('#concernRate_'+rowCountId).val('-1');
+						$('#quantity_'+rowCountId).val('0');
+		            	$('#actualPrice_'+rowCountId).val('0');
+		            	$('#sellingPrice_'+rowCountId).val('0');
+					}
+				});
+				$('.removeRow').click(function(){
+					var rowCountId = $(this).attr('id').split("_").pop();
+					var updateTotalAmount=$('#totalBillAmount').val()-$('#sellingPrice_'+rowCountId).val();
+					$('#totalBillAmount').val(updateTotalAmount);
+				});
+				$(".concernType,.concernRate,.quantity").change(function() {
+					var rowCountId = $(this).attr('id').split("_").pop();
+					var id = $(this).attr('id');
+					var concernTypeId =$('#concernType_'+rowCountId).find('option:selected').val();
+					var concernRateId =$('#concernRate_'+rowCountId).find('option:selected').val();
+					var concernRateText =$('#concernRate_'+rowCountId).find('option:selected').text();
+					var quantity= $('#quantity_'+rowCountId).val();
+				if(parseInt(concernTypeId) >= 0 ){
+					//alert(parseInt(concernTypeId));
+					if(parseInt(concernTypeId) == 9){ //If Other Option Selected
+						$('#concernRate_'+rowCountId).val($('#concernRate_'+rowCountId+' option:contains("Other")').val()).attr('selected',true);
+					}
+					$.ajax({
+							type: "GET",
+				            url : '/deepStudio/pvqManager/pvqBillDesk/retrieveActualPrice',
+				            datatype: "json",
+				            data: { concernType: concernTypeId, concernName: concernRateText},
+				            success : function(data) {
+				                //alert(data); 
+				                data = JSON.parse(data);
+				                Result = data.Result;
+				                if(id == ('quantity_'+rowCountId)){//OnChange of Quantity
+					                var floatedActualPrice = quantity * Result;
+					                var floatedtotalBillAmt=$('#totalBillAmount').val()-$('#sellingPrice_'+rowCountId).val();
+					                $('#totalBillAmount').val(floatedtotalBillAmt);
+									$('#actualPrice_'+rowCountId).val(floatedActualPrice);
+					            }else{ //OnChange of ClientType
+						            	var floatedtotalBillAmt=$('#totalBillAmount').val()-$('#sellingPrice_'+rowCountId).val();
+						                $('#totalBillAmount').val(floatedtotalBillAmt);
+										//If User not Select Select One
+										if(concernRateId != '-1'){
+											$('#quantity_'+rowCountId).val('1');
+								        	$('#actualPrice_'+rowCountId).val(Result);
+							            }else{
+							            	$('#quantity_'+rowCountId).val('0');
+							            	$('#actualPrice_'+rowCountId).val('0');
+							            	$('#sellingPrice_'+rowCountId).val('0');
+							            }
+							    }
+				                $('#sellingPrice_'+rowCountId).val('0');
+				            },
+				            error: function(jqXHR, textStatus, errorThrown) {
+				                alert("error:" + textStatus + " exception:" + errorThrown);
+				                }
+				        });
+					}else{
+						alert('Please Select Concern Type First');
+						$('#concernRate_'+rowCountId).val('-1');
+						$('#quantity_'+rowCountId).val('0');
+		            	$('#actualPrice_'+rowCountId).val('0');
+		            	$('#sellingPrice_'+rowCountId).val('0');
+					} 
+				});
+			});
+</script>
+</head>
+
+<body>
+	<div layout:fragment="content" class="container">
+		<div class="panel panel-default" sec:authorize="hasRole('ADMIN')">
+			<div class="panel-heading text-muted">
+				<h2 class="panel-title">Bill Desk</h2>
+			</div>
+			<div class="panel-body">
+				<form action="#" id="frmPvqBillDesk" th:action="@{/pvqManager/pvqBillDesk/create}"
+					th:object="${objPvq}" method="post" class="form-horizontal">
+						<ul th:if="${#fields.hasErrors('*')}" class="bg-danger">
+							<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input
+								is incorrect</li>
+						</ul>
+						
+						<div class="form-group">
+							<input type="hidden"  th:field="*{pvqBillDetailId}" th:id="pvqBillId"/>
+							<label for="todayDate" class="col-sm-2 control-label" th:text="#{fc.bd.todayDate.label}">Today Date</label>
+							<div class="col-sm-5">
+							<p class="form-control-static text-muted"><span id="todayDate">&nbsp;</span></p> 
+							</div>
+						</div>
+						<div class="form-group" th:if="${objPvq.getPvqBillDetailId()} == null">
+							<label for="custBillNumber" class="col-sm-2 control-label" th:text="#{fc.bd.custBillNumber.label}">Bill Number</label> 
+							<div class="col-sm-4">
+							<input type="text" th:field="*{billNumber}" 
+									class="form-control"
+									th:errorclass="fieldError"
+									th:placeholder="#{fc.bd.custBillNumber.label}" />
+							</div>		
+						</div>
+						<div class="form-group" th:if="${objPvq.getPvqBillDetailId()} != null">
+							<label for="custBillNumber" class="col-sm-2 control-label" th:text="#{fc.bd.custBillNumber.label}">Bill Number</label> 
+							<div class="col-sm-4">
+							<input type="text" th:field="*{billNumber}" 
+									class="form-control"
+									th:errorclass="fieldError"
+									th:placeholder="#{fc.bd.custBillNumber.label}" readonly="readonly"/>
+							</div>		
+						</div>
+						<div class="form-group">
+							<label for="billDate"  class="col-sm-2 control-label"  th:text="#{fc.bd.billingDate.label}">Bill Date (MM-DD-YYYY)</label>
+							<div class="col-sm-4">
+							<input type="text" id="billingDate" th:field="*{billDate}"
+									class="form-control" 
+									onblur="return validateDate(this,event);" /> 
+									<p class="form-control-static text-muted"><span id="errdate" style="color: red">&nbsp;</span></p>
+							</div>
+						</div>
+						
+						<div class="form-group">
+							<label for="orderStatus" class="col-sm-2 control-label" th:text="#{fc.bd.orderStatus.label}">Bill Status</label> 
+							<div class="col-sm-4">
+								<select
+									th:field="*{orderStatus}"
+									class="form-control" style="width: 175px;" >
+										<option th:each="type : ${orderStatus}" 
+						          			th:value="${type}"
+						          			th:text="${type}">Select One</option>
+								</select>
+							</div>	
+						</div>
+						
+						<div class="form-group">
+							<label for="custName" class="col-sm-2 control-label" th:text="#{fc.bd.custName.label}">Customer Name</label>
+							<div class="col-sm-4">
+								<input type="text" th:field="*{custName}"
+									class="form-control" 
+									th:errorclass="fieldError" 
+									th:placeholder="#{fc.bd.custName.label}"/>
+							</div>	
+						</div>
+		
+						<div class="form-group">
+							<label for="custMobno" class="col-sm-2 control-label" th:text="#{fc.bd.custMobno1.label}"> Mobile Number</label> 
+							<div class="col-sm-4">
+							<input type="text" id="mobileNumber" th:field="*{custMobno}"
+								class="form-control"
+								th:errorclass="fieldError"
+								th:placeholder="#{fc.bd.custMobno1.label}" />
+							</div>	
+						</div>
+		
+						<div class="form-group">
+							<label for="custAddress" class="col-sm-2 control-label" th:text="#{fc.bd.custAddress.label}">Customer Address</label>
+							<div class="col-sm-4">
+							 <input type="text" th:field="*{custAddress}" 
+							 		class="form-control"
+							 		th:placeholder="#{fc.bd.custAddress.label}"/>
+							 </div>		
+						</div>
+						
+						<div class="form-group has-success">
+							<label for="finalBillAmount" class="col-sm-2 control-label" th:text="#{fc.pvqCustomerBillInfo.pvqBillAmount.label}">Quatation Billing Amount</label>
+							<div class="col-sm-4 input-group">
+							<div class="input-group-addon">INR</div>
+							<input type="text" id="totalBillAmount"
+								th:field="*{quatationBillAmount}" 
+								class="form-control"
+								th:placeholder="#{fc.pvqCustomerBillInfo.pvqBillAmount.label}" readonly="readonly" />
+							</div>	
+						</div>
+						<div class="form-group has-success">
+							<label for="depositeBillAmount" class="col-sm-2 control-label" th:text="#{fc.pvqCustomerBillInfo.pvqDepositeBillAmount.label}">Add/Deposite Amount</label>
+							<div class="col-sm-4 input-group">
+							<div class="input-group-addon">INR</div>
+							<input type="text" id="depositeBillAmount"
+								th:field="*{depositeAmount}" 
+								class="form-control"
+								th:placeholder="#{fc.pvqCustomerBillInfo.pvqDepositeBillAmount.label}" />
+							</div>
+						</div>
+						<div class="form-group has-success">
+							<label for="paidBillAmount" class="col-sm-2 control-label" th:text="#{fc.pvqCustomerBillInfo.pvqPaidBillAmount.label}">Total Paid Amount</label>
+							<div class="col-sm-4 input-group">
+							<div class="input-group-addon">INR</div>
+							<input type="text" id="totalPaidBillAmount"
+								th:field="*{totalPaidAmount}" 
+								class="form-control"
+								th:placeholder="#{fc.pvqCustomerBillInfo.pvqPaidBillAmount.label}" readonly="readonly" />
+							</div>
+						</div>
+						<div class="form-group has-success">
+							<label for="dueBillAmount" class="col-sm-2 control-label" th:text="#{fc.pvqCustomerBillInfo.pvqDueBillAmount.label}">Due Billing Amount</label>
+							<div class="col-sm-4 input-group">
+							<div class="input-group-addon">INR</div>
+							<input type="text" id="dueBillAmount"
+								th:field="*{dueAmount}" 
+								class="form-control"
+								th:placeholder="#{fc.pvqCustomerBillInfo.pvqDueBillAmount.label}" readonly="readonly" />
+							</div>
+						</div>
+						<!--  -->
+						<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title" >Order Summary</h3>
+						</div>
+						<div class="panel-body">
+								<table class="table table-hover table-striped table-condensed">
+									<thead>
+										<tr>
+											<th scope="col" th:text="#{fc.bd.srno.label}">Sr No.</th>
+											<th scope="col" th:text="#{fc.bd.orderDate.label}">Order Date</th>
+											<th scope="col" th:text="#{fc.bd.eventName.label}">Event Name</th>
+											<th scope="col" th:text="#{fc.bd.eventTime.label}">Time</th>
+											<th scope="col" th:text="#{fc.bd.phg.label}"></th>
+											<th scope="col" th:text="#{fc.bd.vdg.label}"></th>
+											<th scope="col" th:text="#{fc.bd.crn.label}"></th>
+											<th scope="col" th:text="#{fc.bd.led.label}"></th>
+											<th>
+												<button type="submit" name="addOrderSummaryRow"  style="float:right;" id="addOrderSummaryRow"
+													th:text="#{fc.bd.addNewRow.label}" class="btn btn-info btn-sm">Add row</button>
+											</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="row,rowStat : *{pvqBillOrderSummary}">
+											<td th:text="${rowStat.count}" th:id="'rowCount_'+${rowStat.count}"></td>
+											<td>
+											<input type="hidden"  th:field="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryId}" />
+											<input class="form-control orderDate" type="text"
+												th:id="'pvqBillOrderSummaryDate_'+${rowStat.count}"
+												th:field="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryDate}"
+												th:errorclass="fieldError" style="width: 100px;" 
+												th:placeholder="#{fc.bd.orderDate.label}"/>
+								 			</td>
+											<td><input class="form-control" type="text"
+												th:id="'pvqBillOrderSummaryEventType_'+${rowStat.count}"
+												th:field="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryEventType}"
+												th:errorclass="fieldError" style="width: 100px;" 
+												th:placeholder="#{fc.bd.eventName.label}"/>
+											</td>
+											<td><input class="form-control" type="text"
+												th:id="'pvqBillOrderSummaryTime_'+${rowStat.count}"
+												th:field="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryTime}"
+												th:errorclass="fieldError" style="width: 100px;" 
+												th:placeholder="#{fc.bd.eventTime.label}"/>
+											</td>
+											<td>
+												<input class="form-control" type="text"
+													th:id="'pvqBillOrderSummaryTime_Photographers_'+${rowStat.count}"
+													th:field="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryPhotographersQt}"
+													th:errorclass="fieldError" style="width: 40px;" 
+													th:placeholder="P"/>
+											</td>
+											<td>
+												<input class="form-control" type="text"
+													th:id="'pvqBillOrderSummaryTime_Videographers_'+${rowStat.count}"
+													th:field="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryVideographersQt}"
+													th:errorclass="fieldError" style="width: 40px;" 
+													th:placeholder="V"/>
+											</td>
+											<td>
+												<input class="form-control" type="text"
+													th:id="'pvqBillOrderSummaryTime_Crain_'+${rowStat.count}"
+													th:field="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryCrainQt}"
+													th:errorclass="fieldError" style="width: 40px;" 
+													th:placeholder="C"/>
+											</td>
+											<td>
+												<input class="form-control" type="text"
+													th:id="'pvqBillOrderSummaryTime_Led_'+${rowStat.count}"
+													th:field="*{pvqBillOrderSummary[__${rowStat.index}__].pvqBillOrderSummaryLedQt}"
+													th:errorclass="fieldError" style="width: 40px;" 
+													th:placeholder="L"/>
+											</td>
+											<td>
+												<button type="submit" name="removeOrderSummaryRow" 
+													th:id="'removeOrderSummaryRow_'+${rowStat.count}"
+													class="close removeOrderSummaryRow" aria-label="Close"
+													th:value="${rowStat.index}" >
+													<span aria-hidden="true">&times;</span>
+												</button>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<!--  -->
+						<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title" >PVQ Billing Concerns</h3>
+						</div>
+						<div class="panel-body">
+								<table class="table table-hover table-striped table-condensed">
+									<thead class="framedata_table_header">
+										<tr>
+											<th scope="col" th:text="#{fc.bd.srno.label}">Sr No.</th>
+											<th scope="col" th:text="#{fc.bd.concernTypes.label}">Concern Types</th>
+											<th scope="col" th:text="#{fc.bd.concernName.label}">Concern Name</th>
+											<th scope="col" th:text="#{fc.bd.pvqQuantity.label}">Quantity</th>
+											<th scope="col" th:text="#{fc.bd.pvqActualPrice.label}">Actual Price</th>
+											<th scope="col" th:text="#{fc.bd.pvqSellingPrice.label}">Selling Price</th>
+											<th>
+												<button type="submit" name="addRow" id="addRow" style="float:right;"
+													th:text="#{fc.bd.addNewRow.label}" class="btn btn-info btn-sm">Add row</button>
+											</th>
+										</tr>
+									</thead>
+									<tbody>
+										<tr th:each="row,rowStat : *{pvqBillConcernDetails}">
+											<td th:text="${rowStat.count}" th:id="'rowCount_'+${rowStat.count}"></td>
+											<td>
+											<input type="hidden"  th:field="*{pvqBillConcernDetails[__${rowStat.index}__].pvqBillConcernDetailId}" />
+											<select
+												th:field="*{pvqBillConcernDetails[__${rowStat.index}__].pvqConcernType.pvqConcernTypeId}"
+												class="form-control concernType" style="width: 150px;" th:id="'concernType_'+${rowStat.count}">
+													<option th:each="type : ${concernTypes}"
+														th:value="${type.pvqConcernTypeId}"
+														th:text="${type.pvqConcernTypeName}">Select One</option>
+											</select>
+								 			</td>
+											<td><select
+												th:field="*{pvqBillConcernDetails[__${rowStat.index}__].pvqConcernRate.pvqConcernRateId}"
+												class="form-control concernRate" style="width: 150px;" th:id="'concernRate_'+${rowStat.count}">
+													<option th:text="'Select One'" th:value="-1"></option>
+													<option th:each="type : ${concernRates}"
+														th:value="${type.pvqConcernRateId}"
+														th:text="${type.pvqConcernName}">Select One</option>
+											</select>
+											<br/><textarea rows="3" class="form-control" th:id="'pvqBillConcernDetailDesc_'+${rowStat.count}" 
+											th:placeholder="#{fc.bd.concernDesc.label}"
+											th:field="*{pvqBillConcernDetails[__${rowStat.index}__].pvqBillConcernDetailDesc}" style="resize: none;"></textarea>
+											</td>
+											<td><input class="form-control quantity" type="text"
+												th:id="'quantity_'+${rowStat.count}"
+												th:field="*{pvqBillConcernDetails[__${rowStat.index}__].quantity}"
+												th:errorclass="fieldError" style="width: 80px;" 
+												th:placeholder="#{fc.bd.pvqQuantity.label}"/></td>
+											<td><input class="form-control actualPrice" type="text"
+												th:id="'actualPrice_'+${rowStat.count}" 
+												th:field="*{pvqBillConcernDetails[__${rowStat.index}__].actualRate}"
+												th:errorclass="fieldError" style="width: 80px;"
+												readonly="readonly" /></td>
+											<td><input class="form-control sellingPrice" type="text"
+												th:id="'sellingPrice_'+${rowStat.count}"
+												th:field="*{pvqBillConcernDetails[__${rowStat.index}__].sellingRate}"
+												th:errorclass="fieldError" style="width: 80px;"
+												th:placeholder="#{fc.bd.pvqSellingPrice.label}" /></td>
+											<td>
+												<button type="submit" name="removeRow" 
+													th:id="'removeRow_'+${rowStat.count}"
+													class="close removeRow" aria-label="Close"
+													th:value="${rowStat.index}" >
+													<span aria-hidden="true">&times;</span>
+												</button>
+											</td>
+										</tr>
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div>
+							<button class="btn btn-primary" type="button" name="endorseBill" id="endorseBill" th:text="#{fc.bd.button.endorsebill}"
+								onclick="return createFinalBill(this);">Endorse Bill</button>
+							<button class="btn btn-success" style="float:right;" type="button" name="closeBill" id="closeBill" th:text="#{fc.bd.button.closebill}"
+								onclick="return createFinalBill(this);">Close Bill</button>
+							<button th:if="${objPvq.getPvqBillDetailId()} != null" class="btn btn-primary" type="button" name="previewBill" id="previewBill" th:text="#{fc.bd.button.previewbill}"
+								onClick="return openQuatation(this,$('#pvqBillId').val());">Preview Bill</button>
+						</div>
+				</form>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

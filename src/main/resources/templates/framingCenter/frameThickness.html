@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+<title th:text="#{ds.fc.title}">Deep Studio</title>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$('#frameThicknessDataTable').DataTable();
+	});	
+</script>
+</head>
+<body>
+	<div layout:fragment="content" class="container">
+
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title" th:text="#{fc.frameThickness.table.caption}">Panel
+					title</h3>
+			</div>
+			<div class="panel-body">
+				<table class="table table-hover table-striped table-condensed" id="frameThicknessDataTable">
+					<thead class="framedata_table_header">
+						<tr>
+							<th scope="col" th:text="#{fc.frameThickness.frameInfoId.label}">Id</th>
+							<th scope="col" th:text="#{fc.frameThickness.frameSize.label}">Frame
+								Thickness Size</th>
+							<th scope="col"
+								th:text="#{fc.frameThickness.frameMeasurement.label}">Frame
+								Measurement</th>
+							<th scope="col" th:text="#{fc.frameThickness.frameDesc.label}">Frame
+								Description</th>
+							<th scope="col"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="fi : ${frameList}">
+							<td th:text="${fi.frameThicknessId}">1</td>
+							<td th:text="${fi.frameThicknessSize}">George</td>
+							<td th:text="${fi.frameMeasurementsType}">gwash</td>
+							<td th:text="${fi.frameDesc}">Washington</td>
+							<td>
+							<div sec:authorize="hasRole('ADMIN')">
+							<a
+								th:href="@{/framingCenter/frameThickness/edit(frameId=${fi.frameThicknessId})}"><span
+									class="glyphicon glyphicon-pencil"></span></a> <a
+								onclick="return removeRecord();"
+								th:href="@{/framingCenter/frameThickness/delete(frameId=${fi.frameThicknessId})}"><span
+									class="glyphicon glyphicon-remove-circle"></span></a>
+							</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div class="panel panel-default" sec:authorize="hasRole('ADMIN')">
+			<div class="panel-heading">
+				<h3 class="panel-title">Thickness</h3>
+			</div>
+			<div class="panel-body">
+				<form action="#" th:action="@{/framingCenter/frameThickness/create}"
+					th:object="${objFrame}" method="post" enctype="multipart/form-data" class="form-inline">
+					<ul th:if="${#fields.hasErrors('*')}" class="bg-danger">
+						<li th:each="err : ${#fields.errors('*')}" th:text="${err}">Input
+							is incorrect</li>
+					</ul>
+					<div class="form-group">
+						<label class="sr-only" for="frameThicknessSize">Thickness</label><input
+							type="text" hidden="hidden" th:field="*{frameThicknessId}" /> <input
+							class="form-control" type="text" id="frameThicknessSize"
+							th:field="*{frameThicknessSize}" th:errorclass="fieldError"
+							th:placeholder="#{fc.frameThickness.frameSize.label}" />
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="measurement">Measurement</label> <select
+							id="measurement" th:field="*{frameMeasurementsType}"
+							class="form-control">
+							<option th:each="type : ${measurement}" th:value="${type}"
+								th:text="${type}">Select One</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label class="sr-only" for="fDescription">Description</label><input
+							class="form-control" type="text" th:field="*{frameDesc}"
+							th:placeholder="#{fc.frameThickness.frameDesc.label}" />
+					</div>
+					<button type="submit" class="btn btn-primary"
+						th:text="#{${frameType + '.frameInfo.button.label'}}">Action</button>
+				</form>
+			</div>
+		</div>
+
+
+	</div>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/web/thymeleaf/layout"
+	layout:decorator="framingCenter/layout/framingCenterLayout"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	lang="en">
+<head>
+<title th:text="#{ds.fc.title}">Deep Studio</title>
+<script type="text/javascript">
+	$(document).ready(function() {
+		var table = $('#frameBillingDataTable').DataTable();
+		
+	});
+</script>
+</head>
+<body>
+	<div layout:fragment="content" class="container">
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h3 class="panel-title"
+					th:text="#{fc.frameCustomerBillInfo.table.caption}">Frame
+					Billing Records</h3>
+			</div>
+			<div class="panel-body">
+				<table class="table table-hover table-striped table-condensed"
+					id="frameBillingDataTable">
+					<thead class="framedata_table_header">
+						<tr>
+							<th scope="col"
+								th:text="#{fc.frameCustomerBillInfo.custBillingId.label}">custBillingId</th>
+							<th scope="col"
+								th:text="#{fc.frameCustomerBillInfo.custBillNumber.label}">custBillNumber</th>
+							<th scope="col"
+								th:text="#{fc.frameCustomerBillInfo.custBillingDate.label}">custBillingDate</th>
+							<th scope="col"
+								th:text="#{fc.frameCustomerBillInfo.frameCustInfo.label}">frameCustInfo</th>
+							<th scope="col"
+								th:text="#{fc.frameCustomerBillInfo.frameDesc.label}">Bill
+								Description</th>
+							<th scope="col"
+								th:text="#{fc.frameCustomerBillInfo.frameBillAmount.label}">Bill
+								Amount</th>
+							<th scope="col"
+								th:text="#{fc.bd.totalPaidBillAmount.label}">Paid Bill
+								Amount</th>
+							<th scope="col"
+								th:text="#{fc.bd.dueAmount.label}">Due Bill
+								Amount</th>
+							<th scope="col"
+								th:text="#{fc.bd.discountAmount.label}">Discounted Bill
+								Amount</th>
+							<th scope="col"
+								th:text="#{fc.frameCustomerBillInfo.frameBillStatus.label}">Bill
+								Status</th>
+							<th scope="col"></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="fi : ${billingInfos}">
+							<td th:text="${fi.custBillingId}">1</td>
+							<td th:text="${fi.custBillNumber}">George</td>
+							<td th:text="${#dates.format(fi.billDate,'dd/MM/yyyy')}">Washington</td>
+							<td th:text="|${fi.custName}  ${fi.custMobno}|">Washington</td>
+							<td>
+								<table class="table table-hover table-striped table-condensed">
+									<tbody>
+										<tr th:each="fu,rowStat : ${fi.frameCustBillingInfoDetail}">
+											<td th:text="${rowStat.count}">3</td>
+											<td th:text="${fu.frameDetails.frameInfo.frameType}">Frame
+												Type</td>
+											<td th:text="${fu.frameDetails.frameNumber.frameNumber}">Frame
+												Number</td>
+											<td
+												th:text="|${fu.frameDetails.frameSize.frameSizeWidth} * ${fu.frameDetails.frameSize.frameSizeHeight}  ${fu.frameDetails.frameSize.frameMeasurementsType}|">Frame
+												Size</td>
+											<td
+												th:text="| ${fu.frameDetails.frameThickness.frameThicknessSize} ${fu.frameDetails.frameThickness.frameMeasurementsType}| ">Frame
+												Thickness</td>
+											<td th:text="${fu.frameClientType.clientTypeName}">CLient
+												name</td>
+											<td th:text="${fu.quantity}">Quantity</td>
+											<td th:text="${fu.sellingRate}">Selling Price</td>
+										</tr>
+									</tbody>
+								</table>
+							</td>
+							<td th:text="${fi.finalBillAmount}">Washington</td>
+							<td th:text="${fi.totalPaidAmount}">Washington</td>
+							<td th:text="${fi.dueAmount}">Washington</td>
+							<td th:text="${fi.dueAmount}">Washington</td>
+							<td th:text="${fi.billStatus}">Washington</td>
+							<td>
+								<div sec:authorize="hasRole('ADMIN')">
+									<a
+										th:href="@{/framingCenter/frameBilling/edit(custBillingId=${fi.custBillingId})}"><span
+										class="glyphicon glyphicon-pencil"></span></a> <a
+										onclick="return removeRecord();"
+										th:href="@{/framingCenter/frameBilling/delete(custBillingId=${fi.custBillingId})}"><span
+										class="glyphicon glyphicon-remove-circle"></span></a>
+								</div>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<div sec:authorize="hasRole('ADMIN')">
+			<a th:href="@{/framingCenter/frameBilling/billDesk}"
+				class="btn btn-primary">Add Customer bill</a>
+		</div>
+	</div>
+</body>
+</html>
